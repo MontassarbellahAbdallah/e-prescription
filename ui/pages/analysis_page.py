@@ -22,6 +22,10 @@ from ui.components.dosage_components import (
     display_dosage_analysis_section, 
     get_dosage_summary_for_overview
 )
+# from ui.components.contraindication_components import (
+#     display_contraindication_analysis_section,
+#     get_contraindication_summary_for_overview
+# )
 
 logger = get_logger(__name__)
 
@@ -454,7 +458,7 @@ class AnalysisPage:
         self._render_global_overview(analysis)
         
         # 2. Organisation par onglets pour chaque section
-        tab1, tab2 = st.tabs(["💊 Interactions médicamenteuses", "⚖️ Dosage inadapté"])
+        tab1, tab2 = st.tabs(["Interactions médicamenteuses", "Dosage"])
         
         with tab1:
             # Section interactions (existante)
