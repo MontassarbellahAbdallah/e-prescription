@@ -1,0 +1,310 @@
+# ==================================
+# FICHIER .GITIGNORE POUR PRESCRIPTION CHATBOT
+# ==================================
+
+# ============ FICHIERS SENSIBLES ============
+# Variables d'environnement avec clés API
+.env
+.env.local
+.env.production
+.env.staging
+.env.development
+
+# Sauvegarde des fichiers d'environnement
+.env.backup
+.env.bak
+*.env.backup
+
+# ============ CACHE ET DONNÉES TEMPORAIRES ============
+# Cache de l'application
+cache/
+*.pkl
+*.pickle
+
+# Index FAISS (modèles vectoriels)
+faiss_index_chat/
+*.faiss
+*.index
+
+# Logs de l'application
+*.log
+logs/
+app.log
+
+# ============ PYTHON ============
+# Bytecode Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# celery beat schedule file
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# ============ IDE ET ÉDITEURS ============
+# PyCharm
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# VSCode
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ============ SYSTÈME D'EXPLOITATION ============
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ============ DONNÉES SENSIBLES DU PROJET ============
+# Modèles de ML entraînés
+models/
+*.model
+*.pth
+*.h5
+*.hdf5
+*.joblib
+
+# Données médicales sensibles (si présentes)
+data/patients/
+data/prescriptions/
+data/sensitive/
+*.csv.backup
+patient_data.*
+
+# Clés de chiffrement
+*.key
+*.pem
+*.p12
+*.pfx
+
+# ============ FICHIERS TEMPORAIRES ============
+# Fichiers temporaires de traitement
+temp/
+tmp/
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Exports et rapports générés
+exports/
+reports/
+output/
+*.pdf.generated
+*.xlsx.generated
+
+# ============ BASE DE DONNÉES ============
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+# Autres bases de données
+*.mdb
+*.accdb
+
+# ============ CONFIGURATION LOCALE ============
+# Configuration spécifique à l'environnement local
+config/local.py
+config/production.py
+local_settings.py
+
+# ============ DOCUMENTATION GÉNÉRÉE ============
+# Sphinx documentation
+docs/_build/
+
+# ============ UPLOADS ET FICHIERS UTILISATEURS ============
+# Fichiers uploadés par les utilisateurs
+uploads/
+user_files/
+attachments/
+
+# ============ TESTS ============
+# Coverage reports
+.coverage
+.nyc_output
+
+# Test databases
+test.db
+test_*.db
+
+# ============ STREAMLIT ============
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# ============ AUTRES ============
+# Sass
+.sass-cache/
+
+# Compress
+.grunt
+
+# Bower dependency directory (https://bower.io/)
+bower_components
+
+# node_modules (si Node.js est utilisé)
+node_modules/
+
+# REMARQUES IMPORTANTES :
+# 1. Le fichier .env contient vos clés API - JAMAIS le pousser sur GitHub
+# 2. Le dossier cache/ contient des données temporaires qui peuvent être régénérées
+# 3. faiss_index_chat/ contient l'index vectoriel - peut être volumineux
+# 4. Utilisez .env.template comme modèle pour la configuration
+# 5. Les fichiers *.log contiennent des informations de débogage sensibles
