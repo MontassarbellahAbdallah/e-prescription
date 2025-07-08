@@ -22,10 +22,10 @@ from ui.components.dosage_components import (
     display_dosage_analysis_section, 
     get_dosage_summary_for_overview
 )
-# from ui.components.contraindication_components import (
-#     display_contraindication_analysis_section,
-#     get_contraindication_summary_for_overview
-# )
+from ui.components.contraindication_components import (
+    display_contraindication_analysis_section,
+    get_contraindication_summary_for_overview
+)
 
 logger = get_logger(__name__)
 
@@ -196,6 +196,7 @@ class AnalysisPage:
                         'patient_info': complete_result['patient_info'],
                         'interactions': complete_result.get('interactions'),
                         'dosage': complete_result.get('dosage'),  # NOUVEAU
+                        'contraindications': complete_result.get('contraindications'),  # NOUVEAU
                         'context_used': len(context_docs) > 0,
                         'analysis_type': 'complete'  # NOUVEAU
                     }
@@ -241,65 +242,65 @@ class AnalysisPage:
                     st.info(f"Informations trouvées sur {drug} dans les guidelines médicales")
                     
                     # Afficher les sources détaillées
-                    self._display_detailed_sources(sources_info)
+                    #self._display_detailed_sources(sources_info)
     
-    def _display_detailed_sources(self, sources_info: List[Dict]) -> None:
-        """
-        Affiche les sources détaillées avec expandeurs
+    # def _display_detailed_sources(self, sources_info: List[Dict]) -> None:
+    #     """
+    #     Affiche les sources détaillées avec expandeurs
         
-        Args:
-            sources_info: Informations détaillées sur les sources
-        """
-        if not sources_info:
-            return
+    #     Args:
+    #         sources_info: Informations détaillées sur les sources
+    #     """
+    #     if not sources_info:
+    #         return
         
-        st.subheader("📝 Sources détaillées")
+    #     st.subheader("📝 Sources détaillées")
         
-        for i, source in enumerate(sources_info[:3], 1):
-            # Titre de l'expandeur avec citation académique
-            citation = source.get('academic_citation', source.get('document', f'Source {i}'))
-            relevance = source.get('relevance_score', 0)
+    #     for i, source in enumerate(sources_info[:3], 1):
+    #         # Titre de l'expandeur avec citation académique
+    #         citation = source.get('academic_citation', source.get('document', f'Source {i}'))
+    #         relevance = source.get('relevance_score', 0)
             
-            with st.expander(f"🟡 Source {i}: {citation} (Score: {relevance:.2f})"):
-                # Informations détaillées
-                col1, col2 = st.columns(2)
+    #         with st.expander(f"🟡 Source {i}: {citation} (Score: {relevance:.2f})"):
+    #             # Informations détaillées
+    #             col1, col2 = st.columns(2)
                 
-                with col1:
-                    st.write("**Métadonnées :**")
-                    st.write(f"- Document: {source.get('document', 'Inconnu')}")
-                    st.write(f"- Page: {source.get('page', 'Inconnue')}")
-                    st.write(f"- Section: {source.get('document_section', 'Inconnue')}")
-                    st.write(f"- Type: {source.get('guideline_type', 'Inconnu')}")
+    #             with col1:
+    #                 st.write("**Métadonnées :**")
+    #                 st.write(f"- Document: {source.get('document', 'Inconnu')}")
+    #                 st.write(f"- Page: {source.get('page', 'Inconnue')}")
+    #                 st.write(f"- Section: {source.get('document_section', 'Inconnue')}")
+    #                 st.write(f"- Type: {source.get('guideline_type', 'Inconnu')}")
                 
-                with col2:
-                    st.write("**Pertinence :**")
-                    st.write(f"- Score: {relevance:.3f}")
-                    st.write(f"- Raison: {source.get('relevance_explanation', 'Non spécifiée')}")
+    #             with col2:
+    #                 st.write("**Pertinence :**")
+    #                 st.write(f"- Score: {relevance:.3f}")
+    #                 st.write(f"- Raison: {source.get('relevance_explanation', 'Non spécifiée')}")
                 
-                # Citation exacte si disponible
-                if source.get('exact_quote'):
-                    st.write("**Citation exacte :**")
-                    st.info(f'""{source["exact_quote"]}"')
+    #             # Citation exacte si disponible
+    #             if source.get('exact_quote'):
+    #                 st.write("**Citation exacte :**")
+    #                 st.info(f'""{source["exact_quote"]}"')
                 
-                # Contexte de citation
-                if source.get('citation_context'):
-                    st.write("**Contexte :**")
-                    st.text_area(
-                        "Contenu avec contexte",
-                        source['citation_context'],
-                        height=100,
-                        key=f"context_{i}"
-                    )
+    #             # Contexte de citation
+    #             if source.get('citation_context'):
+    #                 st.write("**Contexte :**")
+    #                 st.text_area(
+    #                     "Contenu avec contexte",
+    #                     source['citation_context'],
+    #                     height=100,
+    #                     key=f"context_{i}"
+    #                 )
                 
-                # Contenu complet
-                if source.get('full_content'):
-                    st.write("**Contenu complet :**")
-                    st.text_area(
-                        "Contenu du document",
-                        source['full_content'][:1000] + "..." if len(source.get('full_content', '')) > 1000 else source.get('full_content', ''),
-                        height=150,
-                        key=f"full_content_{i}"
-                    )
+    #             # Contenu complet
+    #             if source.get('full_content'):
+    #                 st.write("**Contenu complet :**")
+    #                 st.text_area(
+    #                     "Contenu du document",
+    #                     source['full_content'][:1000] + "..." if len(source.get('full_content', '')) > 1000 else source.get('full_content', ''),
+    #                     height=150,
+    #                     key=f"full_content_{i}"
+    #                 )
     
     def _generate_detailed_explanation(self, question: str, context_docs: List):
         """Génère une explication détaillée avec sources"""
@@ -336,14 +337,26 @@ class AnalysisPage:
             elif dosage_data['stats']['total_issues'] > 0:
                 risk_factors.append('dosage_moderate')
         
+        # NOUVEAU: Facteurs de contre-indications
+        contraindication_data = analysis.get('contraindications')
+        if contraindication_data:
+            if contraindication_data['stats']['has_critical_contraindications']:
+                risk_factors.append('contraindication_critical')
+            elif contraindication_data['stats']['total_contraindications'] > 0:
+                risk_factors.append('contraindication_moderate')
+        
         # Évaluation globale
-        if 'interactions_major' in risk_factors or 'dosage_critical' in risk_factors:
+        if ('interactions_major' in risk_factors or 
+            'dosage_critical' in risk_factors or 
+            'contraindication_critical' in risk_factors):
             return {
                 'level': 'ÉLEVÉ',
                 'description': 'Révision urgente',
                 'color': 'error'
             }
-        elif 'interactions_moderate' in risk_factors or 'dosage_moderate' in risk_factors:
+        elif ('interactions_moderate' in risk_factors or 
+              'dosage_moderate' in risk_factors or 
+              'contraindication_moderate' in risk_factors):
             return {
                 'level': 'MODÉRÉ', 
                 'description': 'Surveillance requise',
@@ -361,7 +374,7 @@ class AnalysisPage:
         st.markdown("#### 📊 Vue d'ensemble de l'analyse")
         
         # Métriques globales
-        col1, col2, col3, col4, col5 = st.columns(5)
+        col1, col2, col3, col4, col5, col6 = st.columns(6)
         
         with col1:
             create_metric_card("Médicaments", str(len(analysis['drugs'])))
@@ -395,6 +408,18 @@ class AnalysisPage:
                 create_metric_card("Problèmes dosage", "N/A")
         
         with col4:
+            # NOUVEAU: Métriques contre-indications
+            contraindication_data = analysis.get('contraindications')
+            if contraindication_data:
+                contraindication_count = contraindication_data['stats']['total_contraindications']
+                create_metric_card(
+                    "Contre-indications", 
+                    str(contraindication_count)
+                )
+            else:
+                create_metric_card("Contre-indications", "N/A")
+        
+        with col5:
             # Informations patient
             patient_info = analysis.get('patient_info', 'Non spécifié')
             if 'Âge:' in patient_info:
@@ -403,14 +428,12 @@ class AnalysisPage:
             else:
                 create_metric_card("Patient", "Info manquante")
         
-        with col5:
+        with col6:
             # Score de risque global (calculé)
             risk_score = self._calculate_global_risk_score(analysis)
             create_metric_card(
                 "Risque global", 
-                risk_score['level'],
-                #delta=risk_score['description'],
-                #delta_color=risk_score['color']
+                risk_score['level']
             )
     def _render_prescription_evaluation(self, analysis: Dict):
         """Affiche l'évaluation globale de la prescription"""
@@ -441,6 +464,13 @@ class AnalysisPage:
         if dosage_data and dosage_data['stats']['has_critical_issues']:
             recommendations.append("⚠️ **Problèmes de dosage critiques** - Ajustements immédiats nécessaires")
         
+        # NOUVEAU: Recommandations basées sur les contre-indications
+        contraindication_data = analysis.get('contraindications')
+        if contraindication_data and contraindication_data['stats']['has_critical_contraindications']:
+            recommendations.append("🚨 **Contre-indications absolues détectées** - Arrêt immédiat des médicaments concernés")
+        elif contraindication_data and contraindication_data['stats']['total_contraindications'] > 0:
+            recommendations.append("⚠️ **Contre-indications relatives** - Surveillance renforcée nécessaire")
+        
         # Recommandations générales
         recommendations.extend([
             "📋 **Révision pharmaceutique** recommandée dans les 24h",
@@ -458,7 +488,7 @@ class AnalysisPage:
         self._render_global_overview(analysis)
         
         # 2. Organisation par onglets pour chaque section
-        tab1, tab2 = st.tabs(["Interactions médicamenteuses", "Dosage"])
+        tab1, tab2, tab3 = st.tabs(["Interactions médicamenteuses", "Dosage", "Contre-indications"])
         
         with tab1:
             # Section interactions (existante)
@@ -486,6 +516,14 @@ class AnalysisPage:
                 display_dosage_analysis_section(dosage_data)
             else:
                 st.warning("Données de dosage non disponibles")
+        
+        with tab3:
+            # NOUVELLE SECTION: Contre-indications
+            contraindication_data = analysis.get('contraindications')
+            if contraindication_data:
+                display_contraindication_analysis_section(contraindication_data)
+            else:
+                st.warning("Données de contre-indications non disponibles")
         
         # 3. Évaluation globale de la prescription
         self._render_prescription_evaluation(analysis)

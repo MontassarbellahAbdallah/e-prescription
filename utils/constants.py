@@ -298,5 +298,64 @@ PROMPT_TEMPLATES = {
     }}
     
     Si aucun problème de dosage détecté, retourne des listes vides pour surdosage et sous_dosage.
+    """,
+    
+    # Nouveau prompt spécialisé pour l'analyse de contre-indications
+    'contraindication_analysis': """
+    Tu es un pharmacien expert spécialisé dans les contre-indications médicamenteuses. Analyse cette prescription pour détecter les contre-indications.
+    
+    Prescription: {prescription}
+    Informations patient: {patient_info}
+    
+    Contexte médical de référence:
+    {context}
+    
+    Pour chaque médicament, évalue:
+    1. Les contre-indications absolues (interdiction formelle)
+    2. Les contre-indications relatives (prudence, surveillance)
+    3. Les pathologies du patient mentionnées
+    4. Les interactions avec d'autres conditions
+    
+    IMPORTANT: Si la base de connaissances ne contient pas d'informations sur un médicament spécifique, indique-le clairement dans "donnees_insuffisantes".
+    
+    Réponds au format JSON suivant:
+    {{
+        "contraindication_analysis": {{
+            "contre_indications_absolues": [
+                {{
+                    "medicament": "nom du médicament",
+                    "condition": "pathologie/condition contre-indiquée",
+                    "mecanisme": "mécanisme de la contre-indication",
+                    "consequences": "conséquences possibles",
+                    "recommandation": "action recommandée",
+                    "source": "source de l'information (base vectorielle ou connaissances générales)"
+                }}
+            ],
+            "contre_indications_relatives": [
+                {{
+                    "medicament": "nom du médicament",
+                    "condition": "pathologie/condition nécessitant prudence", 
+                    "mecanisme": "mécanisme de précaution",
+                    "consequences": "risques potentiels",
+                    "recommandation": "mesures de surveillance",
+                    "source": "source de l'information"
+                }}
+            ],
+            "aucune_contre_indication": [
+                {{
+                    "medicament": "nom du médicament",
+                    "commentaire": "aucune contre-indication identifiée"
+                }}
+            ],
+            "donnees_insuffisantes": [
+                {{
+                    "medicament": "nom du médicament",
+                    "raison": "la base de connaissances ne contient pas d'informations suffisantes sur ce médicament"
+                }}
+            ]
+        }}
+    }}
+    
+    Si aucune contre-indication n'est trouvée dans la base de connaissances, utilise la section "donnees_insuffisantes" pour éviter les hallucinations.
     """
 }

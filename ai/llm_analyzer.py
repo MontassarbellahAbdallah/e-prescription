@@ -13,6 +13,7 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 from langchain.schema import Document
 from ai.dosage_analyzer import DosageAnalyzer
+from ai.contraindication_analyzer import ContraindicationAnalyzer
 from config.settings import settings
 from config.logging_config import get_logger
 from core.exceptions import LLMAnalysisError
@@ -756,12 +757,16 @@ class LLMAnalyzer:
         # NOUVEAU: Ajouter l'analyseur de dosage
         self.dosage_analyzer = DosageAnalyzer(use_cache)
         
+        # NOUVEAU: Ajouter l'analyseur de contre-indications
+        self.contraindication_analyzer = ContraindicationAnalyzer(use_cache)
+        
         # Statistiques d'utilisation
         self.usage_stats = {
             'extractions': 0,
             'interactions_analyzed': 0,
             'explanations_generated': 0,
             'dosage_analyses': 0,  # NOUVEAU
+            'contraindication_analyses': 0,  # NOUVEAU
             'total_llm_calls': 0,
             'cache_hits': 0
         }
@@ -781,6 +786,21 @@ class LLMAnalyzer:
         """
         self.usage_stats['dosage_analyses'] += 1
         return self.dosage_analyzer.analyze_dosage(prescription, patient_info)
+    
+    def analyze_contraindications(self, prescription: str, patient_info: str = "", context_docs=None) -> Dict:
+        """
+        Analyse les contre-indications de la prescription (interface simplifiée)
+        
+        Args:
+            prescription: Texte de la prescription
+            patient_info: Informations sur le patient
+            context_docs: Documents de contexte de la base vectorielle
+            
+        Returns:
+            Résultat de l'analyse de contre-indications
+        """
+        self.usage_stats['contraindication_analyses'] += 1
+        return self.contraindication_analyzer.analyze_contraindications(prescription, patient_info, context_docs)
     
     # 4. Modifier la méthode get_usage_statistics pour inclure le dosage
     
@@ -1014,7 +1034,7 @@ class LLMAnalyzer:
     
     def analyze_prescription_complete(self, prescription: str, context_docs=None) -> Dict:
         """
-        Analyse complète d'une prescription (interactions + dosage)
+        Analyse complète d'une prescription (interactions + dosage + contre-indications)
         
         Args:
             prescription: Texte de la prescription
@@ -1023,7 +1043,7 @@ class LLMAnalyzer:
         Returns:
             Résultat d'analyse complète
         """
-        logger.info("Starting complete prescription analysis (interactions + dosage)")
+        logger.info("Starting complete prescription analysis (interactions + dosage + contraindications)")
         
         try:
             # 1. Extraction des médicaments
@@ -1046,19 +1066,24 @@ class LLMAnalyzer:
             # 4. Analyse du dosage
             dosage_result = self.analyze_dosage(prescription, patient_info)
             
-            # 5. Résultat combiné
+            # 5. NOUVEAU: Analyse des contre-indications
+            contraindication_result = self.analyze_contraindications(prescription, patient_info, context_docs)
+            
+            # 6. Résultat combiné
             complete_result = {
                 'drugs': drugs,
                 'patient_info': patient_info,
                 'interactions': interactions_result,
                 'dosage': dosage_result,
+                'contraindications': contraindication_result,  # NOUVEAU
                 'timestamp': datetime.now().isoformat(),
                 'analysis_type': 'complete'
             }
             
             logger.info(f"Complete analysis finished: {len(drugs)} drugs, "
                        f"{interactions_stats['total_combinations'] if interactions_stats else 0} interactions, "
-                       f"{dosage_result['stats']['total_issues']} dosage issues")
+                       f"{dosage_result['stats']['total_issues']} dosage issues, "
+                       f"{contraindication_result['stats']['total_contraindications']} contraindications")
             
             return complete_result
             
