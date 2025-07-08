@@ -126,12 +126,12 @@ class MedInteractionApp:
             # Chercher les fichiers PDF
             pdf_files = glob.glob(os.path.join(settings.GUIDELINES_DIR, "*.pdf"))
             
-            # if not pdf_files:
-            #     st.warning(
-            #         f"Aucun fichier PDF trouvé dans {settings.GUIDELINES_DIR}. "
-            #         "Placez vos documents de référence dans ce dossier pour activer la recherche documentaire."
-            #     )
-            #     return
+            if not pdf_files:
+                st.warning(
+                    f"Aucun fichier PDF trouvé dans {settings.GUIDELINES_DIR}. "
+                    "Placez vos documents de référence dans ce dossier pour activer la recherche documentaire."
+                )
+                return
             
             logger.info(f"Found {len(pdf_files)} PDF files for vector store setup")
             
