@@ -251,16 +251,20 @@ PROMPT_TEMPLATES = {
     """,
     # Nouveau prompt spécialisé pour l'analyse de dosage
     'dosage_analysis': """
-    Tu es un pharmacien expert. Analyse les dosages de cette prescription médicale.
+    Tu es un pharmacien expert. Analyse les dosages de cette prescription médicale en te basant sur le contexte médical fourni.
     
     Prescription: {prescription}
     Informations patient: {patient_info}
     
+    Contexte médical de référence:
+    {context}
+    
     Pour chaque médicament, évalue:
-    1. La dose prescrite vs dose recommandée
+    1. La dose prescrite vs dose recommandée (utilise les références du contexte si disponibles)
     2. Les facteurs d'ajustement (âge, poids, fonction rénale/hépatique)
-    3. Les risques de surdosage ou sous-dosage
+    3. Les risques de surdosage ou sous-dosage selon les guidelines
     4. Les interactions pouvant modifier l'effet des doses
+    5. Les recommandations spécifiques pour les populations à risque (personnes âgées, insuffisance rénale/hépatique)
     
     Réponds au format JSON suivant:
     {{
@@ -272,8 +276,9 @@ PROMPT_TEMPLATES = {
                     "dose_recommandee": "dose recommandée avec unité",
                     "facteur_risque": "âge/interactions/fonction organique",
                     "gravite": "Faible/Modérée/Élevée",
-                    "explication": "explication détaillée",
-                    "recommandation": "action recommandée"
+                    "explication": "explication détaillée (cite les sources du contexte si utilisées)",
+                    "recommandation": "action recommandée",
+                    "source": "source de l'information (contexte médical ou connaissances générales)"
                 }}
             ],
             "sous_dosage": [
@@ -283,15 +288,17 @@ PROMPT_TEMPLATES = {
                     "dose_recommandee": "dose recommandée avec unité",
                     "facteur_risque": "raison du sous-dosage",
                     "gravite": "Faible/Modérée/Élevée",
-                    "explication": "explication détaillée",
-                    "recommandation": "action recommandée"
+                    "explication": "explication détaillée (cite les sources du contexte si utilisées)",
+                    "recommandation": "action recommandée",
+                    "source": "source de l'information (contexte médical ou connaissances générales)"
                 }}
             ],
             "dosage_approprie": [
                 {{
                     "medicament": "nom du médicament",
                     "dose_prescrite": "dose avec unité",
-                    "commentaire": "dosage approprié pour ce patient"
+                    "commentaire": "dosage approprié pour ce patient",
+                    "source": "source de la validation (contexte médical ou connaissances générales)"
                 }}
             ]
         }}

@@ -4,6 +4,54 @@
 
 Application Streamlit professionnelle pour l'analyse de prescription médicale, basée sur l'IA Gemini et la technologie RAG (Retrieval-Augmented Generation).
 
+### ⚙️ **Utilisation de la Vector Store Database**
+
+## **✅ OUI, le système utilise intensivement la base vectorielle pour :**
+
+### **1. Détection des Interactions**
+- La base vectorielle **FAISS** contient 12 documents PDF de guidelines médicales
+- Pour l'analyse d'interactions, le système :
+  ```python
+  # Dans llm_analyzer.py
+  def analyze_single_interaction(self, drug1, drug2, context_docs):
+      # context_docs provient de la recherche vectorielle
+      context_text = "\n".join([doc.page_content[:500] for doc in context_docs[:3]])
+  ```
+
+### **2. Analyse de Dosage**
+- **✅ TOTALEMENT** : Le dosage utilise maintenant la base vectorielle pour enrichir l'analyse
+- Le système recherche dans les guidelines pour les dosages recommandés selon l'âge et pathologies
+  ```python
+  # Dans dosage_analyzer.py
+  def analyze_dosage(self, prescription, patient_info, context_docs):
+      context = self._prepare_context(context_docs or [])
+      prompt = PROMPT_TEMPLATES['dosage_analysis'].format(
+          context=context  # Utilise les docs de la base vectorielle
+      )
+  ```
+
+### **3. Contre-indications**
+- **✅ FORTEMENT** : Les contre-indications utilisent directement la base vectorielle
+  ```python
+  # Dans contraindication_analyzer.py
+  def analyze_contraindications(self, prescription, patient_info, context_docs):
+      context = self._prepare_context(context_docs or [])
+      prompt = PROMPT_TEMPLATES['contraindication_analysis'].format(
+          context=context  # Utilise les docs de la base vectorielle
+      )
+  ```
+
+### **4. Analyse Complète Intégrée**
+- Le système effectue une **analyse complète** qui utilise la base vectorielle pour toutes les analyses :
+  ```python
+  # Dans llm_analyzer.py
+  def analyze_prescription_complete(self, prescription, context_docs):
+      # Toutes les analyses utilisent context_docs de la base vectorielle
+      interactions = self.analyze_all_combinations(drugs, context_docs)
+      dosage = self.analyze_dosage(prescription, patient_info, context_docs)
+      contraindications = self.analyze_contraindications(prescription, patient_info, context_docs)
+  ```
+
 ### ✨ Fonctionnalités principales
 
 - 🔬 **Analyse d'interactions** : Extraction automatique de médicaments et analyse des interactions

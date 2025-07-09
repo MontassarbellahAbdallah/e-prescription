@@ -39,19 +39,20 @@ class DosageAnalyzer:
         return self.key_manager.wrap_quota(self.model.invoke)
     
     @measure_execution_time
-    def analyze_dosage(self, prescription: str, patient_info: str = "") -> Dict:
+    def analyze_dosage(self, prescription: str, patient_info: str = "", context_docs: List[str] = None) -> Dict:
         """
         Analyse les dosages de la prescription
         
         Args:
             prescription: Texte de la prescription
             patient_info: Informations sur le patient (âge, poids, etc.)
+            context_docs: Documents de contexte de la base vectorielle
             
         Returns:
             Dictionnaire avec analyse de dosage structurée
         """
         # Créer une clé de cache
-        cache_key = f"dosage_{prescription}_{patient_info}"
+        cache_key = f"dosage_{prescription}_{patient_info}_{len(context_docs or [])}"
         
         # Vérifier le cache
         if self.cache_manager:
@@ -61,10 +62,14 @@ class DosageAnalyzer:
                 return cached_result
         
         try:
+            # Préparer le contexte
+            context = self._prepare_context(context_docs or [])
+            
             # Préparer le prompt
             prompt = PROMPT_TEMPLATES['dosage_analysis'].format(
                 prescription=prescription,
-                patient_info=patient_info or "Informations patient non spécifiées"
+                patient_info=patient_info or "Informations patient non spécifiées",
+                context=context
             )
             
             # Appeler le LLM
@@ -80,7 +85,8 @@ class DosageAnalyzer:
             result = {
                 'dosage_analysis': dosage_data,
                 'stats': stats,
-                'raw_response': content
+                'raw_response': content,
+                'context_used': len(context_docs or []) > 0
             }
             
             # Mettre en cache
@@ -93,6 +99,25 @@ class DosageAnalyzer:
         except Exception as e:
             logger.error(f"Dosage analysis failed: {e}")
             return self._get_empty_dosage_result(str(e))
+    
+    def _prepare_context(self, context_docs: List[str]) -> str:
+        """
+        Prépare le contexte à partir des documents
+        
+        Args:
+            context_docs: Liste des documents de contexte
+            
+        Returns:
+            Contexte formaté
+        """
+        if not context_docs:
+            return "Aucune documentation spécifique disponible. Base-toi sur tes connaissances médicales générales pour les dosages standards."
+        
+        context = "Documentation médicale de référence sur les dosages:\n\n"
+        for i, doc in enumerate(context_docs[:10], 1):  # Limiter à 3 documents
+            context += f"Source {i}:\n{doc}\n\n"
+        
+        return context
     
     def _parse_dosage_response(self, content: str) -> Dict:
         """
@@ -219,7 +244,8 @@ class DosageAnalyzer:
                 'has_critical_issues': False,
                 'error': error_msg
             },
-            'raw_response': ""
+            'raw_response': "",
+            'context_used': False
         }
     
     def format_dosage_for_display(self, dosage_analysis: Dict) -> List[Dict]:
@@ -245,6 +271,7 @@ class DosageAnalyzer:
                 'Facteur de risque': item.get('facteur_risque', 'Non spécifié'),
                 'Explication': item.get('explication', 'Aucune explication'),
                 'Recommandation': item.get('recommandation', 'Aucune recommandation'),
+                'Source': item.get('source', 'Base de connaissances'),
                 'Couleur': self._get_severity_color(item.get('gravite', 'Faible'))
             })
         
@@ -259,6 +286,7 @@ class DosageAnalyzer:
                 'Facteur de risque': item.get('facteur_risque', 'Non spécifié'),
                 'Explication': item.get('explication', 'Aucune explication'),
                 'Recommandation': item.get('recommandation', 'Aucune recommandation'),
+                'Source': item.get('source', 'Base de connaissances'),
                 'Couleur': self._get_severity_color(item.get('gravite', 'Faible'))
             })
         

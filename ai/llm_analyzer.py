@@ -773,19 +773,20 @@ class LLMAnalyzer:
     
     # 3. Ajouter la méthode d'analyse de dosage
     
-    def analyze_dosage(self, prescription: str, patient_info: str = "") -> Dict:
+    def analyze_dosage(self, prescription: str, patient_info: str = "", context_docs=None) -> Dict:
         """
-        Analyse les dosages de la prescription (interface simplifiée)
+        Analyse les dosages de la prescription avec contexte vectoriel (interface simplifiée)
         
         Args:
             prescription: Texte de la prescription
             patient_info: Informations sur le patient
+            context_docs: Documents de contexte de la base vectorielle
             
         Returns:
             Résultat de l'analyse de dosage
         """
         self.usage_stats['dosage_analyses'] += 1
-        return self.dosage_analyzer.analyze_dosage(prescription, patient_info)
+        return self.dosage_analyzer.analyze_dosage(prescription, patient_info, context_docs)
     
     def analyze_contraindications(self, prescription: str, patient_info: str = "", context_docs=None) -> Dict:
         """
@@ -1063,8 +1064,8 @@ class LLMAnalyzer:
                     'stats': interactions_stats
                 }
             
-            # 4. Analyse du dosage
-            dosage_result = self.analyze_dosage(prescription, patient_info)
+            # 4. Analyse du dosage (avec contexte vectoriel)
+            dosage_result = self.analyze_dosage(prescription, patient_info, context_docs)
             
             # 5. NOUVEAU: Analyse des contre-indications
             contraindication_result = self.analyze_contraindications(prescription, patient_info, context_docs)

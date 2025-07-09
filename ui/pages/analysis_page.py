@@ -181,7 +181,8 @@ class AnalysisPage:
         # NOUVEAU: Utiliser l'analyse complète au lieu de juste les interactions
         with st.spinner("Analyse des interactions et dosages en cours..."):
             try:
-                # Analyse complète (interactions + dosage)
+                # Analyse complète (interactions + dosage + contre-indications)
+                # context_docs est passé pour enrichir TOUTES les analyses
                 complete_result = self.llm_analyzer.analyze_prescription_complete(question, context_docs)
                 
                 # Nettoyer la barre de progression
@@ -532,7 +533,7 @@ class AnalysisPage:
         if 'detailed_explanation_needed' in st.session_state:
             explanation_data = st.session_state.detailed_explanation_needed
             
-            st.markdown("### 📝 Rapport détaillé avec sources")
+            st.markdown("### Rapport détaillé")
             
             with st.spinner("Génération du rapport détaillé..."):
                 detailed_explanation = self.llm_analyzer.get_detailed_explanation_with_sources(
