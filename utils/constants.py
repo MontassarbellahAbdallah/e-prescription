@@ -364,5 +364,68 @@ PROMPT_TEMPLATES = {
     }}
     
     Si aucune contre-indication n'est trouvée dans la base de connaissances, utilise la section "donnees_insuffisantes" pour éviter les hallucinations.
+    """,
+    
+    # Nouveau prompt spécialisé pour l'analyse de redondance thérapeutique
+    'redundancy_analysis': """
+    Tu es un pharmacien expert spécialisé dans l'optimisation thérapeutique. Analyse cette prescription pour détecter les redondances thérapeutiques.
+    
+    Prescription: {prescription}
+    Informations patient: {patient_info}
+    
+    Contexte médical de référence:
+    {context}
+    
+    Pour chaque médicament, évalue:
+    1. Les redondances directes (même molécule prescrite plusieurs fois)
+    2. Les redondances de classe (médicaments de même classe thérapeutique)
+    3. Les redondances fonctionnelles (même effet thérapeutique par mécanismes différents)
+    4. L'optimisation possible de la stratégie thérapeutique
+    
+    Base-toi sur les guidelines du contexte médical pour identifier les associations inappropriées ou redondantes.
+    
+    Réponds au format JSON suivant:
+    {{
+        "redundancy_analysis": {{
+            "redondance_directe": [
+                {{
+                    "classe_therapeutique": "classe concernée",
+                    "medicaments": ["médicament1", "médicament2"],
+                    "mecanisme": "même principe actif prescrit plusieurs fois",
+                    "risque": "surdosage, effets indésirables cumulés",
+                    "recommandation": "éliminer les doublons, ajuster la posologie",
+                    "source": "source de l'information (contexte médical ou connaissances générales)"
+                }}
+            ],
+            "redondance_classe": [
+                {{
+                    "classe_therapeutique": "classe concernée",
+                    "medicaments": ["médicament1", "médicament2"],
+                    "mecanisme": "même classe thérapeutique, effets similaires",
+                    "risque": "effets additifs, interactions potentielles",
+                    "recommandation": "évaluer la nécessité, choisir un seul représentant",
+                    "source": "source de l'information"
+                }}
+            ],
+            "redondance_fonctionnelle": [
+                {{
+                    "classe_therapeutique": "classes concernées",
+                    "medicaments": ["médicament1", "médicament2"],
+                    "mecanisme": "effet thérapeutique similaire par mécanismes différents",
+                    "risque": "effet cumulé non nécessaire, complexification du traitement",
+                    "recommandation": "optimiser la stratégie thérapeutique, simplifier si possible",
+                    "source": "source de l'information"
+                }}
+            ],
+            "aucune_redondance": [
+                {{
+                    "medicament": "nom du médicament",
+                    "commentaire": "médicament unique dans sa classe/fonction thérapeutique"
+                }}
+            ]
+        }}
+    }}
+    
+    Si aucune redondance n'est détectée, utilise la section "aucune_redondance" pour chaque médicament analysé.
     """
 }
