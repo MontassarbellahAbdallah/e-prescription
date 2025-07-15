@@ -15,6 +15,7 @@ from langchain.schema import Document
 from ai.dosage_analyzer import DosageAnalyzer
 from ai.contraindication_analyzer import ContraindicationAnalyzer
 from ai.redundancy_analyzer import RedundancyAnalyzer
+from ai.administration_route_analyzer import AdministrationRouteAnalyzer
 from config.settings import settings
 from config.logging_config import get_logger
 from core.exceptions import LLMAnalysisError
@@ -764,6 +765,9 @@ class LLMAnalyzer:
         # NOUVEAU: Ajouter l'analyseur de redondance thérapeutique
         self.redundancy_analyzer = RedundancyAnalyzer(use_cache)
         
+        # NOUVEAU: Ajouter l'analyseur de voies d'administration
+        self.administration_route_analyzer = AdministrationRouteAnalyzer(use_cache)
+        
         # Statistiques d'utilisation
         self.usage_stats = {
             'extractions': 0,
@@ -772,6 +776,7 @@ class LLMAnalyzer:
             'dosage_analyses': 0,  # NOUVEAU
             'contraindication_analyses': 0,  # NOUVEAU
             'redundancy_analyses': 0,  # NOUVEAU
+            'administration_route_analyses': 0,  # NOUVEAU
             'total_llm_calls': 0,
             'cache_hits': 0
         }
@@ -822,6 +827,21 @@ class LLMAnalyzer:
         """
         self.usage_stats['redundancy_analyses'] += 1
         return self.redundancy_analyzer.analyze_redundancy(prescription, patient_info, context_docs)
+    
+    def analyze_administration_routes(self, prescription: str, patient_info: str = "", context_docs=None) -> Dict:
+        """
+        Analyse les voies d'administration de la prescription (interface simplifiée)
+        
+        Args:
+            prescription: Texte de la prescription
+            patient_info: Informations sur le patient
+            context_docs: Documents de contexte de la base vectorielle
+            
+        Returns:
+            Résultat de l'analyse des voies d'administration
+        """
+        self.usage_stats['administration_route_analyses'] += 1
+        return self.administration_route_analyzer.analyze_administration_routes(prescription, patient_info, context_docs)
     
     # 4. Modifier la méthode get_usage_statistics pour inclure le dosage
     
@@ -1093,6 +1113,9 @@ class LLMAnalyzer:
             # 6. NOUVEAU: Analyse des redondances thérapeutiques
             redundancy_result = self.analyze_redundancy(prescription, patient_info, context_docs)
             
+            # 7. NOUVEAU: Analyse des voies d'administration
+            administration_route_result = self.analyze_administration_routes(prescription, patient_info, context_docs)
+            
             # 7. Résultat combiné
             complete_result = {
                 'drugs': drugs,
@@ -1101,6 +1124,7 @@ class LLMAnalyzer:
                 'dosage': dosage_result,
                 'contraindications': contraindication_result,  # NOUVEAU
                 'redundancy': redundancy_result,  # NOUVEAU
+                'administration_routes': administration_route_result,  # NOUVEAU
                 'timestamp': datetime.now().isoformat(),
                 'analysis_type': 'complete'
             }
@@ -1109,7 +1133,8 @@ class LLMAnalyzer:
                        f"{interactions_stats['total_combinations'] if interactions_stats else 0} interactions, "
                        f"{dosage_result['stats']['total_issues']} dosage issues, "
                        f"{contraindication_result['stats']['total_contraindications']} contraindications, "
-                       f"{redundancy_result['stats']['total_redundancies']} redundancies")
+                       f"{redundancy_result['stats']['total_redundancies']} redundancies, "
+                       f"{administration_route_result['stats']['total_issues']} administration route issues")
             
             return complete_result
             

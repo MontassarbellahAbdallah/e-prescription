@@ -30,6 +30,10 @@ from ui.components.redundancy_components import (
     display_redundancy_analysis_section,
     get_redundancy_summary_for_overview
 )
+from ui.components.administration_route_components import (
+    display_administration_route_section,
+    get_administration_route_summary_for_overview
+)
 
 logger = get_logger(__name__)
 
@@ -200,7 +204,8 @@ class AnalysisPage:
                         'interactions': complete_result.get('interactions'),
                         'dosage': complete_result.get('dosage'),
                         'contraindications': complete_result.get('contraindications'),
-                        'redundancy': complete_result.get('redundancy'),  # NOUVEAU: Ajout redondance
+                        'redundancy': complete_result.get('redundancy'),
+                        'administration_routes': complete_result.get('administration_routes'),  # NOUVEAU: Ajout voies d'administration
                         'context_used': len(context_docs) > 0,
                         'analysis_type': 'complete'
                     }
@@ -273,19 +278,28 @@ class AnalysisPage:
             elif contraindication_data['stats']['total_contraindications'] > 0:
                 risk_factors.append('contraindication_moderate')
         
-        # NOUVEAU: Facteurs de redondance thérapeutique
+        # Facteurs de redondance thérapeutique
         redundancy_data = analysis.get('redundancy')
         if redundancy_data:
             if redundancy_data['stats']['has_critical_redundancies']:
                 risk_factors.append('redundancy_critical')
             elif redundancy_data['stats']['total_redundancies'] > 0:
                 risk_factors.append('redundancy_moderate')
+                
+        # NOUVEAU: Facteurs liés aux voies d'administration
+        administration_route_data = analysis.get('administration_routes')
+        if administration_route_data:
+            if administration_route_data['stats']['has_critical_issues']:
+                risk_factors.append('administration_route_critical')
+            elif administration_route_data['stats']['total_issues'] > 0:
+                risk_factors.append('administration_route_moderate')
         
         # Évaluation globale
         if ('interactions_major' in risk_factors or 
             'dosage_critical' in risk_factors or 
             'contraindication_critical' in risk_factors or
-            'redundancy_critical' in risk_factors):
+            'redundancy_critical' in risk_factors or
+            'administration_route_critical' in risk_factors):
             return {
                 'level': 'ÉLEVÉ',
                 'description': 'Révision urgente',
@@ -294,7 +308,8 @@ class AnalysisPage:
         elif ('interactions_moderate' in risk_factors or 
               'dosage_moderate' in risk_factors or 
               'contraindication_moderate' in risk_factors or
-              'redundancy_moderate' in risk_factors):
+              'redundancy_moderate' in risk_factors or
+              'administration_route_moderate' in risk_factors):
             return {
                 'level': 'MODÉRÉ', 
                 'description': 'Surveillance requise',
@@ -311,8 +326,8 @@ class AnalysisPage:
         """Affiche la vue d'ensemble globale avec toutes les métriques"""
         st.markdown("#### 📊 Vue d'ensemble de l'analyse")
         
-        # Métriques globales - 6 colonnes principales + 1 pour risque global
-        col1, col2, col3, col4, col5, col6 = st.columns(6)
+        # Métriques globales - Utiliser une ligne avec plus de colonnes pour inclure toutes les métriques
+        col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
         
         with col1:
             create_metric_card("Médicaments", str(len(analysis['drugs'])))
@@ -345,7 +360,7 @@ class AnalysisPage:
                 create_metric_card("Contre-indications", "N/A")
         
         with col5:
-            # NOUVEAU: Métriques redondances
+            # Métriques redondances
             redundancy_data = analysis.get('redundancy')
             if redundancy_data:
                 redundancy_count = redundancy_data['stats']['total_redundancies']
@@ -354,6 +369,15 @@ class AnalysisPage:
                 create_metric_card("Redondances", "N/A")
         
         with col6:
+            # NOUVEAU: Métriques voies d'administration
+            administration_route_data = analysis.get('administration_routes')
+            if administration_route_data:
+                route_count = administration_route_data['stats']['total_issues']
+                create_metric_card("Voies d'admin.", str(route_count))
+            else:
+                create_metric_card("Voies d'admin.", "N/A")
+        
+        with col7:
             # Score de risque global
             risk_score = self._calculate_global_risk_score(analysis)
             create_metric_card("Risque global", risk_score['level'])
@@ -401,6 +425,13 @@ class AnalysisPage:
         elif redundancy_data and redundancy_data['stats']['total_redundancies'] > 0:
             recommendations.append("💡 **Redondances détectées** - Optimisation thérapeutique recommandée")
         
+        # NOUVEAU: Recommandations basées sur les voies d'administration
+        administration_route_data = analysis.get('administration_routes')
+        if administration_route_data and administration_route_data['stats']['has_critical_issues']:
+            recommendations.append("🔥 **Voies d'administration critiques détectées** - Modification immédiate nécessaire")
+        elif administration_route_data and administration_route_data['stats']['total_issues'] > 0:
+            recommendations.append("⚠️ **Problèmes de voie d'administration** - Ajustements recommandés")
+        
         # Recommandations générales
         recommendations.extend([
             "📋 **Révision pharmaceutique** recommandée dans les 24h",
@@ -419,7 +450,7 @@ class AnalysisPage:
         self._render_global_overview(analysis)
         
         # 2. Organisation par onglets pour chaque section
-        tab1, tab2, tab3, tab4 = st.tabs(["Interactions médicamenteuses", "Dosage", "Contre-indications", "Redondance thérapeutique"])
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["Interactions médicamenteuses", "Dosage", "Contre-indications", "Redondance thérapeutique", "Voie d'administration"])
         
         with tab1:
             # Section interactions (existante)
@@ -463,6 +494,14 @@ class AnalysisPage:
                 display_redundancy_analysis_section(redundancy_data)
             else:
                 st.warning("Données de redondance thérapeutique non disponibles")
+        
+        with tab5:
+            # NOUVELLE SECTION: Voie d'administration
+            administration_route_data = analysis.get('administration_routes')
+            if administration_route_data:
+                display_administration_route_section(administration_route_data)
+            else:
+                st.warning("Données de voies d'administration non disponibles")
         
         # 3. Évaluation globale de la prescription
         self._render_prescription_evaluation(analysis)

@@ -427,5 +427,85 @@ PROMPT_TEMPLATES = {
     }}
     
     Si aucune redondance n'est détectée, utilise la section "aucune_redondance" pour chaque médicament analysé.
+    """,
+    
+    # Nouveau prompt spécialisé pour l'analyse des voies d'administration
+    'administration_route_analysis': """
+    Tu es un pharmacien expert spécialisé dans les voies d'administration médicamenteuses. Analyse cette prescription pour détecter les problèmes liés aux voies d'administration.
+    
+    Prescription: {prescription}
+    Informations patient: {patient_info}
+    
+    Contexte médical de référence:
+    {context}
+    
+    Pour chaque médicament, évalue:
+    1. La pertinence de la voie d'administration prescrite
+    2. Les risques spécifiques liés à la voie choisie
+    3. Les incompatibilités entre voie et médicament/formulation
+    4. Le timing et la fréquence d'administration par rapport à la voie
+    5. L'adéquation de la voie avec l'état du patient (âge, comorbidités)
+    
+    Base-toi sur les guidelines du contexte médical et sur les bonnes pratiques d'administration.
+    
+    Réponds au format JSON suivant:
+    {{
+        "administration_route_analysis": {{
+            "voie_inappropriee": [
+                {{
+                    "medicament": "nom du médicament",
+                    "voie_prescrite": "voie prescrite",
+                    "voie_recommandee": "voie recommandée",
+                    "justification": "raison de l'inadéquation",
+                    "gravite": "Faible/Modérée/Élevée",
+                    "explication": "explication détaillée (cite les sources du contexte si utilisées)",
+                    "timing_administration": "timing problématique si pertinent",
+                    "frequence": "fréquence d'administration si pertinent",
+                    "recommandation": "action recommandée",
+                    "source": "source de l'information (contexte médical ou connaissances générales)"
+                }}
+            ],
+            "voie_incompatible": [
+                {{
+                    "medicament": "nom du médicament",
+                    "voie_prescrite": "voie prescrite",
+                    "voie_recommandee": "voie recommandée",
+                    "justification": "raison de l'incompatibilité",
+                    "gravite": "Faible/Modérée/Élevée",
+                    "explication": "explication détaillée (cite les sources du contexte si utilisées)",
+                    "timing_administration": "timing problématique si pertinent",
+                    "frequence": "fréquence d'administration si pertinent",
+                    "recommandation": "action recommandée",
+                    "source": "source de l'information (contexte médical ou connaissances générales)"
+                }}
+            ],
+            "voie_risquee": [
+                {{
+                    "medicament": "nom du médicament",
+                    "voie_prescrite": "voie prescrite",
+                    "voie_recommandee": "même voie avec précautions ou alternative",
+                    "justification": "nature du risque",
+                    "gravite": "Faible/Modérée/Élevée",
+                    "explication": "explication détaillée des risques",
+                    "timing_administration": "timing recommandé si pertinent",
+                    "frequence": "fréquence d'administration si pertinent",
+                    "recommandation": "précautions à prendre",
+                    "source": "source de l'information (contexte médical ou connaissances générales)"
+                }}
+            ],
+            "voie_appropriee": [
+                {{
+                    "medicament": "nom du médicament",
+                    "voie_prescrite": "voie prescrite",
+                    "timing_administration": "timing si spécifié",
+                    "frequence": "fréquence si spécifiée",
+                    "commentaire": "voie d'administration appropriée pour ce médicament et ce patient",
+                    "source": "source de la validation (contexte médical ou connaissances générales)"
+                }}
+            ]
+        }}
+    }}
+    
+    Si aucun problème de voie d'administration n'est détecté pour un médicament, ajoute-le dans la section "voie_appropriee".
     """
 }
