@@ -3,7 +3,6 @@ Composants UI pour l'analyse de dosage
 """
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 from typing import Dict, List, Optional
 from config.logging_config import get_logger
@@ -125,14 +124,6 @@ def display_dosage_metrics(stats: Dict):
             #delta_color="success"
         )
     
-    # with col5:
-    #     total_issues = stats.get('total_issues', 0)
-    #     create_metric_card(
-    #         "Total problèmes", 
-    #         str(total_issues),
-    #         #delta="Révision nécessaire" if total_issues > 0 else "Aucun problème",
-    #         #delta_color="error" if total_issues > 0 else "success"
-    #     )
 
 def display_dosage_charts(dosage_data: Dict, stats: Dict):
     """
@@ -157,13 +148,6 @@ def display_dosage_charts(dosage_data: Dict, stats: Dict):
         else:
             st.info("Graphique de répartition non disponible")
     
-    # with col2:
-    #     # Graphique en barres : répartition par gravité
-    #     fig_bar = create_dosage_severity_chart(stats)
-    #     if fig_bar:
-    #         st.plotly_chart(fig_bar, use_container_width=True)
-    #     else:
-    #         st.info("Graphique de gravité non disponible")
 
 def create_dosage_pie_chart(stats: Dict) -> Optional[go.Figure]:
     """
@@ -225,64 +209,6 @@ def create_dosage_pie_chart(stats: Dict) -> Optional[go.Figure]:
     except Exception as e:
         logger.error(f"Error creating dosage pie chart: {e}")
         return None
-
-# def create_dosage_severity_chart(stats: Dict) -> Optional[go.Figure]:
-#     """
-#     Crée un graphique en barres pour la gravité des problèmes
-    
-#     Args:
-#         stats: Statistiques de dosage
-        
-#     Returns:
-#         Figure Plotly ou None
-#     """
-#     try:
-#         gravite_data = stats.get('gravite_repartition', {})
-        
-#         # S'assurer que toutes les clés existent
-#         gravite_data = {
-#             'Faible': gravite_data.get('Faible', 0),
-#             'Modérée': gravite_data.get('Modérée', 0),
-#             'Élevée': gravite_data.get('Élevée', 0)
-#         }
-        
-#         # Filtrer les valeurs non nulles
-#         labels = [k for k, v in gravite_data.items() if v > 0]
-#         values = [v for v in gravite_data.values() if v > 0]
-        
-#         if not values:
-#             return None
-        
-#         # Couleurs selon la gravité
-#         color_map = {
-#             'Faible': '#28A745',
-#             'Modérée': '#FD7E14', 
-#             'Élevée': '#DC3545'
-#         }
-#         colors = [color_map.get(label, '#6C757D') for label in labels]
-        
-#         # Créer le graphique
-#         fig = go.Figure(data=[go.Bar(
-#             x=labels,
-#             y=values,
-#             marker_color=colors,
-#             text=values,
-#             textposition='auto'
-#         )])
-        
-#         fig.update_layout(
-#             title="Gravité des problèmes de dosage",
-#             xaxis_title="Niveau de gravité",
-#             yaxis_title="Nombre de problèmes",
-#             height=300,
-#             margin=dict(t=50, b=50, l=50, r=50)
-#         )
-        
-#         return fig
-        
-#     except Exception as e:
-#         logger.error(f"Error creating dosage severity chart: {e}")
-#         return None
 
 def display_dosage_table(dosage_data: Dict):
     """
