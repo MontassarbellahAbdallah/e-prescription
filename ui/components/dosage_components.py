@@ -26,30 +26,30 @@ def display_dosage_analysis_section(dosage_result: Dict):
     stats = dosage_result['stats']
     
     # En-tête de section
-    st.markdown("### ⚖️ Dosage inadapté")
+    st.markdown("### Dosage inadapté")
     
     # Vérifier s'il y a des problèmes
     if stats['total_issues'] == 0:
         create_status_message(
-            "✅ Aucun problème de dosage détecté dans cette prescription",
+            "Aucun problème de dosage détecté dans cette prescription",
             "success"
         )
         
         # Afficher quand même les médicaments avec dosage approprié s'il y en a
         if stats.get('dosage_approprie_count', 0) > 0:
-            st.info(f"📋 {stats['dosage_approprie_count']} médicament(s) avec dosage approprié")
+            st.info(f"{stats['dosage_approprie_count']} médicament(s) avec dosage approprié")
             _display_appropriate_dosages(dosage_data.get('dosage_approprie', []))
         return
     
     # Alerte si problèmes critiques
     if stats.get('has_critical_issues', False):
         create_status_message(
-            f"🚨 {stats['total_issues']} problème(s) de dosage détecté(s) - Gravité élevée présente",
+            f"{stats['total_issues']} problème(s) de dosage détecté(s) - Gravité élevée présente",
             "error"
         )
     else:
         create_status_message(
-            f"⚠️ {stats['total_issues']} problème(s) de dosage détecté(s)",
+            f"{stats['total_issues']} problème(s) de dosage détecté(s)",
             "warning"
         )
     
@@ -81,7 +81,7 @@ def _display_appropriate_dosages(appropriate_dosages: List[Dict]):
             dose = item.get('dose_prescrite', 'Non spécifiée')
             commentaire = item.get('commentaire', 'Dosage approprié')
             
-            st.markdown(f"✅ **{medicament}** ({dose}): {commentaire}")
+            st.markdown(f"**{medicament}** ({dose}): {commentaire}")
 
 def display_dosage_metrics(stats: Dict):
     """
@@ -90,19 +90,19 @@ def display_dosage_metrics(stats: Dict):
     Args:
         stats: Statistiques de dosage
     """
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4= st.columns(4)
     
     with col1:
         total_meds = stats.get('total_medications', 0)
         create_metric_card(
-            "Médicaments analysés", 
+            "Nombre des Médicaments", 
             str(total_meds)
         )
     
     with col2:
         surdosage_count = stats.get('surdosage_count', 0)
         create_metric_card(
-            "Surdosages", 
+            "Surdosages possible", 
             str(surdosage_count),
             #delta="Critique" if surdosage_count > 0 else None,
             #delta_color="error" if surdosage_count > 0 else "normal"
@@ -111,7 +111,7 @@ def display_dosage_metrics(stats: Dict):
     with col3:
         sous_dosage_count = stats.get('sous_dosage_count', 0)
         create_metric_card(
-            "Sous-dosages", 
+            "Sous-dosages possible", 
             str(sous_dosage_count),
             #delta="Attention" if sous_dosage_count > 0 else None,
             #delta_color="warning" if sous_dosage_count > 0 else "normal"
@@ -125,14 +125,14 @@ def display_dosage_metrics(stats: Dict):
             #delta_color="success"
         )
     
-    with col5:
-        total_issues = stats.get('total_issues', 0)
-        create_metric_card(
-            "Total problèmes", 
-            str(total_issues),
-            #delta="Révision nécessaire" if total_issues > 0 else "Aucun problème",
-            #delta_color="error" if total_issues > 0 else "success"
-        )
+    # with col5:
+    #     total_issues = stats.get('total_issues', 0)
+    #     create_metric_card(
+    #         "Total problèmes", 
+    #         str(total_issues),
+    #         #delta="Révision nécessaire" if total_issues > 0 else "Aucun problème",
+    #         #delta_color="error" if total_issues > 0 else "success"
+    #     )
 
 def display_dosage_charts(dosage_data: Dict, stats: Dict):
     """
@@ -356,7 +356,7 @@ def display_dosage_recommendations(dosage_data: Dict):
     Args:
         dosage_data: Données d'analyse de dosage
     """
-    st.markdown("#### 💡 Recommandations")
+    #st.markdown("#### Recommandations")
     
     # Collecter toutes les recommandations
     recommendations = []
@@ -399,11 +399,11 @@ def display_dosage_recommendations(dosage_data: Dict):
         recommandation = rec['recommandation']
         
         if gravite == 'Élevée':
-            st.error(f"🚨 **{medicament}** ({type_prob}): {recommandation}")
+            st.error(f"**{medicament}** ({type_prob}): {recommandation}")
         elif gravite == 'Modérée':
-            st.warning(f"⚠️ **{medicament}** ({type_prob}): {recommandation}")
+            st.warning(f"**{medicament}** ({type_prob}): {recommandation}")
         else:
-            st.info(f"💡 **{medicament}** ({type_prob}): {recommandation}")
+            st.info(f"  **{medicament}** ({type_prob}): {recommandation}")
     
     # Recommandations générales
     _display_general_dosage_recommendations()
@@ -435,7 +435,6 @@ def get_dosage_summary_for_overview(dosage_result: Dict) -> Dict:
             'status': 'no_data',
             'message': 'Pas de données de dosage',
             'color': 'secondary',
-            'icon': '❓',
             'count': 0
         }
     
@@ -449,7 +448,6 @@ def get_dosage_summary_for_overview(dosage_result: Dict) -> Dict:
             'status': 'ok',
             'message': 'Dosages appropriés',
             'color': 'success',
-            'icon': '✅',
             'count': total_meds
         }
     elif has_critical:
@@ -457,7 +455,6 @@ def get_dosage_summary_for_overview(dosage_result: Dict) -> Dict:
             'status': 'critical',
             'message': f"{total_issues} problème(s) critique(s)",
             'color': 'error',
-            'icon': '🚨',
             'count': total_issues
         }
     else:
@@ -465,7 +462,6 @@ def get_dosage_summary_for_overview(dosage_result: Dict) -> Dict:
             'status': 'warning',
             'message': f"{total_issues} problème(s) de dosage",
             'color': 'warning', 
-            'icon': '⚠️',
             'count': total_issues
         }
 

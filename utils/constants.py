@@ -507,5 +507,63 @@ PROMPT_TEMPLATES = {
     }}
     
     Si aucun problème de voie d'administration n'est détecté pour un médicament, ajoute-le dans la section "voie_appropriee".
+    """,
+    
+    # Nouveau prompt spécialisé pour l'analyse des effets secondaires
+    'side_effects_analysis': """
+    Tu es un pharmacien expert spécialisé dans les effets secondaires médicamenteux. Analyse cette prescription pour détecter les effets secondaires potentiels et les risques associés.
+    
+    Prescription: {prescription}
+    Informations patient: {patient_info}
+    
+    Contexte médical de référence:
+    {context}
+    
+    Pour chaque médicament, évalue:
+    1. Les effets secondaires individuels selon les données disponibles
+    2. Les effets secondaires cumulés potentiels entre médicaments
+    3. Les risques graves nécessitant une surveillance étroite
+    4. Les facteurs de risque spécifiques au patient (âge, comorbidités)
+    5. La fréquence et la gravité des effets selon les guidelines
+    6. Les systèmes organiques affectés
+    
+    Base-toi sur les guidelines du contexte médical et sur les données de pharmacovigilance.
+    
+    Réponds au format JSON suivant:
+    {{
+        "side_effects_analysis": {{
+            "effets_individuels": [
+                {{
+                    "medicament": "nom du médicament",
+                    "effets": ["effet1", "effet2", "effet3"],
+                    "gravite": "Faible/Modérée/Élevée",
+                    "frequence": "Très fréquent/Fréquent/Peu fréquent/Rare",
+                    "systeme_affecte": "Cardiovasculaire/Neurologique/Digestif/Hépatique/Rénal/Cutané/Hématologique/Endocrinien/Autre",
+                    "surveillance": "type de surveillance recommandée",
+                    "source": "source de l'information (contexte médical ou connaissances générales)"
+                }}
+            ],
+            "effets_cumules": [
+                {{
+                    "medicaments": ["médicament1", "médicament2"],
+                    "effet_combine": "description de l'effet cumulé",
+                    "gravite": "Faible/Modérée/Élevée",
+                    "mecanisme": "mécanisme de l'effet cumulé",
+                    "recommandation": "action recommandée"
+                }}
+            ],
+            "risques_graves": [
+                {{
+                    "medicament": "nom du médicament",
+                    "effet": "effet secondaire grave",
+                    "gravite": "Élevée",
+                    "monitoring": "surveillance spécifique nécessaire",
+                    "signes_alerte": "signes d'alerte à surveiller"
+                }}
+            ]
+        }}
+    }}
+    
+    Si aucun effet secondaire significatif n'est détecté, retourne des listes vides pour chaque section.
     """
 }

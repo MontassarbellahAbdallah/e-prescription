@@ -211,7 +211,7 @@ class MedInteractionApp:
                 st.session_state.active_page = "analysis"
             
             # Boutons de navigation
-            if st.button("Analyse d'interactions", use_container_width=True):
+            if st.button("Analyseur des préscriptions", use_container_width=True):
                 st.session_state.active_page = "analysis"
                 st.rerun()
             
@@ -224,8 +224,8 @@ class MedInteractionApp:
                 st.rerun()
             
             # Bouton Vider cache
-            if st.button("Vider cache", use_container_width=True, help="Vider le cache d'extraction pour forcer une nouvelle analyse"):
-                self._handle_clear_cache()
+            # if st.button("Vider cache", use_container_width=True, help="Vider le cache d'extraction pour forcer une nouvelle analyse"):
+            #     self._handle_clear_cache()
             
             st.markdown("---")
             
@@ -288,7 +288,7 @@ class MedInteractionApp:
         """Gère le diagnostic du système RAG"""
         try:
             if 'rag_processor' in st.session_state and st.session_state.rag_processor:
-                with st.spinner("🔍 Diagnostic du système RAG en cours..."):
+                with st.spinner("Diagnostic du système RAG en cours..."):
                     diagnosis = st.session_state.rag_processor.diagnose_rag_system()
                 
                 # Afficher les résultats
@@ -342,7 +342,7 @@ class MedInteractionApp:
                 # Test de recherche
                 if 'search_test' in diagnosis:
                     search_test = diagnosis['search_test']
-                    st.markdown("### 🔍 Test de recherche")
+                    st.markdown("### Test de recherche")
                     if search_test['success']:
                         st.success(f"Test réussi: {search_test['results_count']} résultats")
                         if 'has_doc_meta_markers' in search_test:
@@ -381,17 +381,17 @@ class MedInteractionApp:
                 st.error("Aucun fichier PDF trouvé pour la reconstruction")
                 return
             
-            st.info(f"🔄 Début de la reconstruction avec {len(pdf_files)} PDFs...")
+            st.info(f"Début de la reconstruction avec {len(pdf_files)} PDFs...")
             
             # Callback de progression
             progress_container = st.empty()
             
             def progress_callback(current, total, description):
                 percentage = (current / total) * 100
-                progress_text = f"📄 PDF {current}/{total} ({percentage:.1f}%): {os.path.basename(description)}"
+                progress_text = f"PDF {current}/{total} ({percentage:.1f}%): {os.path.basename(description)}"
                 progress_container.info(progress_text)
             
-            with st.spinner("🔄 Reconstruction séquentielle du Vector Store en cours..."):
+            with st.spinner("Reconstruction séquentielle du Vector Store en cours..."):
                 # Utiliser la nouvelle méthode séquentielle
                 success = st.session_state.rag_processor.create_vector_store_sequential(
                     pdf_files, 
@@ -404,10 +404,10 @@ class MedInteractionApp:
                 if success:
                     stats = st.session_state.rag_processor.get_stats()
                     st.success(
-                        f"✅ Reconstruction réussie avec nouvelle méthode !\n"
-                        f"📄 Documents: {stats['total_documents']}\n"
-                        f"📦 Chunks: {stats['total_chunks']}\n"
-                        f"💾 Taille: {stats['index_size_mb']} MB"
+                        f"Reconstruction réussie avec nouvelle méthode !\n"
+                        f"Documents: {stats['total_documents']}\n"
+                        f"Chunks: {stats['total_chunks']}\n"
+                        f"Taille: {stats['index_size_mb']} MB"
                     )
                     
                     # Test de recherche pour vérifier les métadonnées enrichies
@@ -427,11 +427,11 @@ class MedInteractionApp:
                     time.sleep(3)
                     st.rerun()
                 else:
-                    st.error("❌ Échec de la reconstruction")
+                    st.error("Échec de la reconstruction")
                     
         except Exception as e:
             logger.error(f"Erreur lors de la reconstruction séquentielle: {e}")
-            st.error(f"❌ Erreur lors de la reconstruction: {e}")
+            st.error(f"Erreur lors de la reconstruction: {e}")
     
     def _render_help_section(self):
         """Affiche la section d'aide"""
@@ -439,13 +439,13 @@ class MedInteractionApp:
         Guide d'utilisation:
         
         1. Analyse: Saisissez une prescription médicamenteuse pour analyse
-        2. Recherche: Explorez la base documentaire
         3. Historique: Consultez vos analyses précédentes
         
         Niveaux d'interaction:
-        - 🔴 Major: Éviter l'association
-        - 🟡 Moderate: Surveillance requise
-        - 🟢 Minor: Généralement acceptable
+        - Major: Éviter l'association
+        - Moderate: Surveillance requise
+        - Minor: Généralement acceptable
+        - aucun: Pas d'interaction
         
         Support: Cette application est un outil d'aide à la décision.
         Consultez toujours un professionnel de santé.

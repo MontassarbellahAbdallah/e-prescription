@@ -27,20 +27,20 @@ def display_redundancy_analysis_section(redundancy_result: Dict):
     context_used = redundancy_result.get('context_used', False)
     
     # En-tête de section
-    st.markdown("### 🔄 Redondance thérapeutique")
+    st.markdown("### Redondance thérapeutique")
     
     # Vérifier s'il y a des redondances
     if stats['total_redundancies'] == 0:
         # Vérifier s'il y a des médicaments sans redondance
         if stats.get('aucune_redondance_count', 0) > 0:
             create_status_message(
-                f"✅ Aucune redondance thérapeutique détectée pour {stats['aucune_redondance_count']} médicament(s) - Prescription optimisée",
+                f"Aucune redondance thérapeutique détectée pour {stats['aucune_redondance_count']} médicament(s) - Prescription optimisée",
                 "success"
             )
             _display_unique_medications(redundancy_data.get('aucune_redondance', []))
         else:
             create_status_message(
-                "❓ Aucune information de redondance disponible dans l'analyse",
+                "Aucune information de redondance disponible dans l'analyse",
                 "info"
             )
         return
@@ -48,19 +48,19 @@ def display_redundancy_analysis_section(redundancy_result: Dict):
     # Alerte si redondances critiques
     if stats.get('has_critical_redundancies', False):
         create_status_message(
-            f"🚨 {stats['redondance_directe_count']} redondance(s) directe(s) détectée(s) - OPTIMISATION URGENTE REQUISE",
+            f"{stats['redondance_directe_count']} redondance(s) directe(s) détectée(s) - OPTIMISATION URGENTE REQUISE",
             "error"
         )
     
     if stats.get('redondance_classe_count', 0) > 0:
         create_status_message(
-            f"⚠️ {stats['redondance_classe_count']} redondance(s) de classe détectée(s) - RÉVISION RECOMMANDÉE",
+            f"{stats['redondance_classe_count']} redondance(s) de classe détectée(s) - RÉVISION RECOMMANDÉE",
             "warning"
         )
     
     if stats.get('redondance_fonctionnelle_count', 0) > 0:
         create_status_message(
-            f"💡 {stats['redondance_fonctionnelle_count']} redondance(s) fonctionnelle(s) - OPTIMISATION POSSIBLE",
+            f"{stats['redondance_fonctionnelle_count']} redondance(s) fonctionnelle(s) - OPTIMISATION POSSIBLE",
             "info"
         )
     
@@ -91,7 +91,7 @@ def _display_unique_medications(unique_medications: List[Dict]):
             medicament = item.get('medicament', 'Inconnu')
             commentaire = item.get('commentaire', 'Médicament unique dans sa classe/fonction thérapeutique')
             
-            st.markdown(f"✅ **{medicament}**: {commentaire}")
+            st.markdown(f"**{medicament}**: {commentaire}")
 
 def display_redundancy_metrics(stats: Dict):
     """
@@ -368,37 +368,37 @@ def display_redundancy_recommendations(redundancy_data: Dict, stats: Dict):
         redundancy_data: Données d'analyse de redondance
         stats: Statistiques de redondance
     """
-    st.markdown("#### 💡 Recommandations d'optimisation")
+    st.markdown("#### Recommandations d'optimisation")
     
     # Recommandations basées sur les redondances directes
     directes = redundancy_data.get('redondance_directe', [])
     if directes:
-        st.markdown("##### 🚨 Actions urgentes (Redondances directes):")
+        st.markdown("##### Actions urgentes (Redondances directes):")
         for item in directes:
             medicaments = ', '.join(item.get('medicaments', []))
             recommandation = item.get('recommandation', 'Éliminer les doublons, ajuster la posologie')
             
-            st.error(f"🚨 **{medicaments}**: {recommandation}")
+            st.error(f"**{medicaments}**: {recommandation}")
     
     # Recommandations basées sur les redondances de classe
     classe = redundancy_data.get('redondance_classe', [])
     if classe:
-        st.markdown("##### ⚠️ Révision recommandée (Redondances de classe):")
+        st.markdown("##### Révision recommandée (Redondances de classe):")
         for item in classe:
             medicaments = ', '.join(item.get('medicaments', []))
             recommandation = item.get('recommandation', 'Évaluer la nécessité, choisir un représentant')
             
-            st.warning(f"⚠️ **{medicaments}**: {recommandation}")
+            st.warning(f"**{medicaments}**: {recommandation}")
     
     # Recommandations basées sur les redondances fonctionnelles
     fonctionnelles = redundancy_data.get('redondance_fonctionnelle', [])
     if fonctionnelles:
-        st.markdown("##### 💡 Optimisation possible (Redondances fonctionnelles):")
+        st.markdown("##### Optimisation possible (Redondances fonctionnelles):")
         for item in fonctionnelles:
             medicaments = ', '.join(item.get('medicaments', []))
             recommandation = item.get('recommandation', 'Optimiser la stratégie thérapeutique')
             
-            st.info(f"💡 **{medicaments}**: {recommandation}")
+            st.info(f"**{medicaments}**: {recommandation}")
     
     # Recommandations générales
     _display_general_redundancy_recommendations(stats)
@@ -411,7 +411,7 @@ def _display_general_redundancy_recommendations(stats: Dict):
     
     if optimization_potential == 'HIGH':
         st.markdown("""
-        **🚨 OPTIMISATION URGENTE - Redondances critiques détectées:**
+        **OPTIMISATION URGENTE - Redondances critiques détectées:**
         - **Élimination immédiate** des doublons médicamenteux
         - **Révision complète** de la stratégie thérapeutique
         - **Ajustement posologique** après suppression des redondances
@@ -420,7 +420,7 @@ def _display_general_redundancy_recommendations(stats: Dict):
         """)
     elif optimization_potential == 'MEDIUM':
         st.markdown("""
-        **⚠️ RÉVISION RECOMMANDÉE - Redondances modérées détectées:**
+        **RÉVISION RECOMMANDÉE - Redondances modérées détectées:**
         - **Évaluation bénéfice/risque** de chaque association
         - **Simplification** de la prescription si possible
         - **Choix du médicament** le plus approprié par classe
@@ -429,7 +429,7 @@ def _display_general_redundancy_recommendations(stats: Dict):
         """)
     else:
         st.markdown("""
-        **✅ PRESCRIPTION OPTIMISÉE:**
+        **PRESCRIPTION OPTIMISÉE:**
         - **Aucune redondance** thérapeutique majeure détectée
         - **Poursuite** du traitement selon prescription
         - **Réévaluation périodique** de l'optimisation thérapeutique
@@ -465,7 +465,6 @@ def get_redundancy_summary_for_overview(redundancy_result: Dict) -> Dict:
             'status': 'optimized',
             'message': 'Prescription optimisée',
             'color': 'success',
-            'icon': '✅',
             'count': 0
         }
     elif has_critical:
@@ -473,7 +472,6 @@ def get_redundancy_summary_for_overview(redundancy_result: Dict) -> Dict:
             'status': 'critical',
             'message': f"{total_redundancies} redondance(s) critique(s)",
             'color': 'error',
-            'icon': '🚨',
             'count': total_redundancies
         }
     elif optimization_potential == 'MEDIUM':
@@ -481,7 +479,6 @@ def get_redundancy_summary_for_overview(redundancy_result: Dict) -> Dict:
             'status': 'medium',
             'message': f"{total_redundancies} redondance(s) modérée(s)",
             'color': 'warning', 
-            'icon': '⚠️',
             'count': total_redundancies
         }
     else:
@@ -489,7 +486,6 @@ def get_redundancy_summary_for_overview(redundancy_result: Dict) -> Dict:
             'status': 'low',
             'message': f"{total_redundancies} redondance(s) mineure(s)",
             'color': 'info', 
-            'icon': '💡',
             'count': total_redundancies
         }
 

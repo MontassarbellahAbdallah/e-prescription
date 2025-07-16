@@ -36,7 +36,7 @@ class InteractionTable:
     
     def _render_styled_table(self, df: pd.DataFrame):
         """Affiche le tableau avec style personnalisé et responsive - Thème sombre"""
-        st.subheader("📋 Interactions détectées")
+        st.subheader("Interactions détectées")
         
         # Préparer les données pour l'affichage
         display_df = df.copy()
@@ -81,9 +81,9 @@ class InteractionTable:
         
         # Message informatif sur le nombre d'éléments
         if num_rows > 10:
-            st.info(f"📊 {num_rows} interactions détectées - Tableau complet affiché")
+            st.info(f"{num_rows} interactions détectées - Tableau complet affiché")
         elif num_rows > 0:
-            st.info(f"📊 {num_rows} interaction(s) détectée(s)")
+            st.info(f"{num_rows} interaction(s) détectée(s)")
         
         # Afficher le tableau avec configuration responsive et thème sombre
         st.dataframe(

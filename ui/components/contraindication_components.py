@@ -27,26 +27,26 @@ def display_contraindication_analysis_section(contraindication_result: Dict):
     context_used = contraindication_result.get('context_used', False)
     
     # En-tête de section
-    st.markdown("### ⚠️ Contre-indications")
+    st.markdown("### Contre-indications")
     
     # Information sur l'utilisation de la base vectorielle
     # if context_used:
-    #     st.info("🔍 Analyse basée sur la base de données vectorielle (FAISS) et la prescription")
+    #     st.info("Analyse basée sur la base de données vectorielle (FAISS) et la prescription")
     # else:
-    #     st.warning("⚠️ Analyse basée uniquement sur les connaissances générales - Base de données vectorielle non disponible")
+    #     st.warning("Analyse basée uniquement sur les connaissances générales - Base de données vectorielle non disponible")
     
     # Vérifier s'il y a des contre-indications
     if stats['total_contraindications'] == 0:
         # Vérifier s'il y a des médicaments sans contre-indication
         if stats.get('aucune_contre_indication_count', 0) > 0:
             create_status_message(
-                f"✅ Aucune contre-indication détectée pour {stats['aucune_contre_indication_count']} médicament(s)",
+                f"Aucune contre-indication détectée pour {stats['aucune_contre_indication_count']} médicament(s)",
                 "success"
             )
             _display_safe_medications(contraindication_data.get('aucune_contre_indication', []))
         elif stats.get('donnees_insuffisantes_count', 0) > 0:
             create_status_message(
-                f"❓ Données insuffisantes dans la base de connaissances pour {stats['donnees_insuffisantes_count']} médicament(s)",
+                f"Données insuffisantes dans la base de connaissances pour {stats['donnees_insuffisantes_count']} médicament(s)",
                 "info"
             )
             _display_insufficient_data_medications(contraindication_data.get('donnees_insuffisantes', []))
@@ -60,13 +60,13 @@ def display_contraindication_analysis_section(contraindication_result: Dict):
     # Alerte si contre-indications critiques
     if stats.get('has_critical_contraindications', False):
         create_status_message(
-            f"🚨 {stats['contre_indications_absolues_count']} contre-indication(s) absolue(s) détectée(s) - PRESCRIPTION DANGEREUSE",
+            f"{stats['contre_indications_absolues_count']} contre-indication(s) absolue(s) détectée(s) - PRESCRIPTION DANGEREUSE",
             "error"
         )
     
     if stats.get('contre_indications_relatives_count', 0) > 0:
         create_status_message(
-            f"⚠️ {stats['contre_indications_relatives_count']} contre-indication(s) relative(s) détectée(s) - SURVEILLANCE REQUISE",
+            f"{stats['contre_indications_relatives_count']} contre-indication(s) relative(s) détectée(s) - SURVEILLANCE REQUISE",
             "warning"
         )
     
@@ -97,7 +97,7 @@ def _display_safe_medications(safe_medications: List[Dict]):
             medicament = item.get('medicament', 'Inconnu')
             commentaire = item.get('commentaire', 'Aucune contre-indication identifiée dans la base de connaissances')
             
-            st.markdown(f"✅ **{medicament}**: {commentaire}")
+            st.markdown(f"**{medicament}**: {commentaire}")
 
 def _display_insufficient_data_medications(insufficient_data_medications: List[Dict]):
     """
@@ -114,7 +114,7 @@ def _display_insufficient_data_medications(insufficient_data_medications: List[D
             medicament = item.get('medicament', 'Inconnu')
             raison = item.get('raison', 'La base de connaissances ne contient pas d\'informations suffisantes sur ce médicament')
             
-            st.markdown(f"❓ **{medicament}**: {raison}")
+            st.markdown(f"**{medicament}**: {raison}")
 
 def display_contraindication_metrics(stats: Dict):
     """
@@ -376,27 +376,27 @@ def display_contraindication_recommendations(contraindication_data: Dict, stats:
         contraindication_data: Données d'analyse de contre-indications
         stats: Statistiques de contre-indications
     """
-    st.markdown("#### 💡 Recommandations")
+    #st.markdown("#### Recommandations")
     
     # Recommandations basées sur les contre-indications absolues
     absolues = contraindication_data.get('contre_indications_absolues', [])
     if absolues:
-        st.markdown("##### ⛔ Actions urgentes (Contre-indications absolues):")
+        st.markdown("##### Actions urgentes (Contre-indications absolues):")
         for item in absolues:
             medicament = item.get('medicament', 'Inconnu')
             recommandation = item.get('recommandation', 'Arrêt immédiat du médicament')
             
-            st.error(f"🚨 **{medicament}**: {recommandation}")
+            st.error(f"**{medicament}**: {recommandation}")
     
     # Recommandations basées sur les contre-indications relatives
     relatives = contraindication_data.get('contre_indications_relatives', [])
     if relatives:
-        st.markdown("##### ⚠️ Surveillance requise (Contre-indications relatives):")
+        st.markdown("##### Surveillance requise (Contre-indications relatives):")
         for item in relatives:
             medicament = item.get('medicament', 'Inconnu')
             recommandation = item.get('recommandation', 'Surveillance renforcée')
             
-            st.warning(f"⚠️ **{medicament}**: {recommandation}")
+            st.warning(f"**{medicament}**: {recommandation}")
     
     # Recommandations générales
     _display_general_contraindication_recommendations(stats)
@@ -407,7 +407,7 @@ def _display_general_contraindication_recommendations(stats: Dict):
     
     if stats.get('has_critical_contraindications', False):
         st.markdown("""
-        **🚨 URGENCE - Contre-indications absolues détectées:**
+        **URGENCE - Contre-indications absolues détectées:**
         - **Arrêt immédiat** des médicaments contre-indiqués
         - **Contact immédiat** avec le prescripteur
         - **Réévaluation complète** de la prescription
@@ -416,7 +416,7 @@ def _display_general_contraindication_recommendations(stats: Dict):
         """)
     elif stats.get('contre_indications_relatives_count', 0) > 0:
         st.markdown("""
-        **⚠️ PRUDENCE - Contre-indications relatives détectées:**
+        **PRUDENCE - Contre-indications relatives détectées:**
         - **Évaluation bénéfice/risque** approfondie
         - **Surveillance clinique renforcée** 
         - **Ajustement posologique** si nécessaire
@@ -425,7 +425,7 @@ def _display_general_contraindication_recommendations(stats: Dict):
         """)
     else:
         st.markdown("""
-        **✅ PRESCRIPTION SÛRE:**
+        **PRESCRIPTION SÛRE:**
         - **Poursuite** du traitement selon prescription
         - **Surveillance standard** du patient
         - **Réévaluation périodique** selon protocole
@@ -446,7 +446,6 @@ def get_contraindication_summary_for_overview(contraindication_result: Dict) -> 
             'status': 'no_data',
             'message': 'Pas de données de contre-indications',
             'color': 'secondary',
-            'icon': '❓',
             'count': 0
         }
     
@@ -460,7 +459,6 @@ def get_contraindication_summary_for_overview(contraindication_result: Dict) -> 
             'status': 'safe',
             'message': 'Aucune contre-indication',
             'color': 'success',
-            'icon': '✅',
             'count': 0
         }
     elif has_critical:
@@ -468,7 +466,6 @@ def get_contraindication_summary_for_overview(contraindication_result: Dict) -> 
             'status': 'critical',
             'message': f"{total_contraindications} contre-indication(s) absolue(s)",
             'color': 'error',
-            'icon': '🚨',
             'count': total_contraindications
         }
     else:
@@ -476,6 +473,5 @@ def get_contraindication_summary_for_overview(contraindication_result: Dict) -> 
             'status': 'warning',
             'message': f"{total_contraindications} contre-indication(s) relative(s)",
             'color': 'warning', 
-            'icon': '⚠️',
             'count': total_contraindications
         }

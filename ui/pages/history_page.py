@@ -31,58 +31,39 @@ class HistoryPage:
     
     def render(self):
         """Affiche la page d'historique"""
-        st.subheader("📊 Historique des activités")
+        st.subheader("Historique des activités")
         
         # Statistiques générales
         self._render_overview_stats()
         
         # Onglets pour différents types d'historique
-        tab1, tab2, tab3 = st.tabs([
-            "🔬 Analyses d'interactions", 
-            "🔍 Recherches documentaires", 
-            "⚙️ Gestion"
+        tab1, tab2 = st.tabs([
+            "Analyses d'interactions", 
+            "autres"
         ])
         
         with tab1:
             self._render_analysis_history()
         
-        with tab2:
-            self._render_search_history()
+        # with tab2:
+        #     self._render_search_history()
         
-        with tab3:
-            self._render_management_section()
+        # with tab2:
+        #     self._render_management_section()
     
     def _render_overview_stats(self):
         """Affiche les statistiques générales"""
-        st.markdown("### 📊 Vue d'ensemble")
+        st.markdown("### Vue d'ensemble")
         
-        col1, col2, col3, col4 = st.columns(4)
+        col1= st.columns(1)[0]
         
         with col1:
             create_metric_card("Analyses effectuées", str(len(self.analysis_history)))
         
-        with col2:
-            create_metric_card("Recherches effectuées", str(len(self.search_history)))
-        
-        with col3:
-            total_interactions = sum(
-                analysis.get('stats', {}).get('total_combinations', 0) 
-                for analysis in self.analysis_history
-            )
-            create_metric_card("Total interactions", str(total_interactions))
-        
-        with col4:
-            major_interactions = sum(
-                analysis.get('stats', {}).get('major', 0) 
-                for analysis in self.analysis_history
-            )
-            delta_text = "⚠️ Attention" if major_interactions > 0 else None
-            create_metric_card("Interactions Major", str(major_interactions), 
-                             delta_text, "error" if major_interactions > 0 else "normal")
     
     def _render_analysis_history(self):
         """Affiche l'historique des analyses"""
-        st.markdown("### 🔬 Historique des analyses d'interactions")
+        st.markdown("### Historique des analyses d'interactions")
         
         if not self.analysis_history:
             create_status_message(
@@ -111,11 +92,11 @@ class HistoryPage:
         interactions = analysis.get('interactions', [])
         
         time_str = format_timestamp(timestamp)
-        header = f"📋 Analyse {index} - {time_str}"
+        header = f"Analyse {index} - {time_str}"
         
         major_count = stats.get('major', 0)
         if major_count > 0:
-            header += f" ⚠️ {major_count} Major"
+            header += f" {major_count} Major"
         
         with st.expander(header, expanded=index <= 2):
             col1, col2 = st.columns([2, 1])
@@ -136,31 +117,6 @@ class HistoryPage:
                     with col_minor:
                         st.metric("Minor", stats.get('minor', 0))
             
-            # Actions
-            st.markdown("---")
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                if st.button(f"🔄 Réanalyser", key=f"reanalyze_{index}"):
-                    st.session_state['reanalyze_question'] = question
-                    st.session_state.active_page = "analysis"
-                    st.rerun()
-            
-            with col2:
-                if interactions and st.button(f"📈 Voir graphiques", key=f"charts_{index}"):
-                    display_interaction_charts(interactions)
-            
-            with col3:
-                if interactions:
-                    export_data = self._prepare_analysis_export(analysis)
-                    if export_data:
-                        st.download_button(
-                            label="📄 Exporter CSV",
-                            data=export_data,
-                            file_name=f"analyse_{time_str.replace('/', '_').replace(' ', '_').replace(':', '_')}.csv",
-                            mime="text/csv",
-                            key=f"export_{index}"
-                        )
     
     def _prepare_analysis_export(self, analysis: Dict) -> str:
         """Prépare les données d'une analyse pour l'export CSV"""
@@ -177,7 +133,7 @@ class HistoryPage:
     
     def _render_search_history(self):
         """Affiche l'historique des recherches"""
-        st.markdown("### 🔍 Historique des recherches documentaires")
+        st.markdown("### Historique des recherches documentaires")
         
         if not self.search_history:
             create_status_message(
@@ -214,53 +170,16 @@ class HistoryPage:
             st.metric("Résultats", results_count)
         
         with col3:
-            if st.button("🔄", key=f"repeat_search_{index}", help="Répéter cette recherche"):
+            if st.button(key=f"repeat_search_{index}", help="Répéter cette recherche"):
                 st.session_state['auto_search_query'] = query
                 st.session_state.active_page = "search"
                 st.rerun()
         
         with col4:
-            if st.button("🗑️", key=f"delete_search_{index}", help="Supprimer cette recherche"):
+            if st.button(key=f"delete_search_{index}", help="Supprimer cette recherche"):
                 st.session_state.search_history.remove(search)
                 st.rerun()
     
-    def _render_management_section(self):
-        """Affiche la section de gestion de l'historique"""
-        st.markdown("### ⚙️ Gestion de l'historique")
-        
-        # Statistiques de stockage
-        st.markdown("#### 📊 Statistiques de stockage")
-        
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            analysis_size = len(str(self.analysis_history).encode('utf-8'))
-            create_metric_card("Taille analyses", f"{analysis_size / 1024:.1f} KB")
-        
-        with col2:
-            search_size = len(str(self.search_history).encode('utf-8'))
-            create_metric_card("Taille recherches", f"{search_size / 1024:.1f} KB")
-        
-        with col3:
-            total_size = analysis_size + search_size
-            create_metric_card("Taille totale", f"{total_size / 1024:.1f} KB")
-        
-        # Actions de gestion
-        st.markdown("#### 🛠️ Actions de gestion")
-        
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            if st.button("📄 Exporter tout l'historique", type="secondary"):
-                self._export_full_history()
-        
-        with col2:
-            if st.button("🔄 Nettoyer l'historique ancien", type="secondary"):
-                self._cleanup_old_history()
-        
-        with col3:
-            if st.button("🗑️ Vider tout l'historique", type="secondary"):
-                self._clear_all_history()
     
     def _export_full_history(self):
         """Exporte tout l'historique"""
@@ -277,17 +196,17 @@ class HistoryPage:
             json_data = json.dumps(full_history, indent=2, default=str, ensure_ascii=False)
             
             st.download_button(
-                label="📄 Télécharger l'historique complet (JSON)",
+                label="Télécharger l'historique complet (JSON)",
                 data=json_data,
                 file_name=f"historique_complet_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
                 mime="application/json"
             )
             
-            st.success("✅ Export prêt au téléchargement")
+            st.success("Export prêt au téléchargement")
             
         except Exception as e:
             logger.error(f"Error exporting full history: {e}")
-            st.error(f"❌ Erreur lors de l'export: {e}")
+            st.error(f"Erreur lors de l'export: {e}")
     
     def _cleanup_old_history(self):
         """Nettoie l'historique ancien (plus de 30 jours)"""
@@ -309,14 +228,14 @@ class HistoryPage:
         cleaned_count += original_count - len(st.session_state.search_history)
         
         if cleaned_count > 0:
-            st.success(f"✅ {cleaned_count} entrées anciennes supprimées")
+            st.success(f"{cleaned_count} entrées anciennes supprimées")
             st.rerun()
         else:
             st.info("Aucune entrée ancienne à supprimer")
     
     def _clear_all_history(self):
         """Vide tout l'historique avec confirmation"""
-        st.markdown("#### ⚠️ Confirmation requise")
+        st.markdown("#### Confirmation requise")
         st.warning(
             "Cette action supprimera définitivement tout l'historique "
             "(analyses et recherches). Cette action ne peut pas être annulée."
@@ -328,11 +247,11 @@ class HistoryPage:
         )
         
         if confirm_text == "SUPPRIMER":
-            if st.button("🗑️ Confirmer la suppression", type="primary"):
+            if st.button("Confirmer la suppression", type="primary"):
                 st.session_state.analysis_history = []
                 st.session_state.search_history = []
                 
-                st.success("✅ Tout l'historique a été supprimé")
+                st.success("Tout l'historique a été supprimé")
                 st.rerun()
 
 def render_history_page():

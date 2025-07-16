@@ -34,6 +34,10 @@ from ui.components.administration_route_components import (
     display_administration_route_section,
     get_administration_route_summary_for_overview
 )
+from ui.components.side_effects_components import (
+    display_side_effects_analysis_section,
+    get_side_effects_summary_for_overview
+)
 
 logger = get_logger(__name__)
 
@@ -79,7 +83,7 @@ class AnalysisPage:
     
     def _render_input_section(self):
         """Affiche la section de saisie"""
-        st.markdown("### Analysez votre prescription médicale")
+        st.markdown("### Indiquer votre prescription médicale à analyser")
         
         # Zone de texte pour la question
         user_question = st.text_area(
@@ -89,16 +93,6 @@ class AnalysisPage:
             max_chars=20000,  # Limitation à 20 000 caractères
             help="Copiez-collez votre prescription complète - L'IA extraira automatiquement les molécules actives et analysera les interactions (max 20 000 caractères)"
         )
-        
-        # Affichage du nombre de caractères
-        char_count = len(user_question) if user_question else 0
-        if char_count > 8000:
-            st.warning(f"{char_count}/10 000 caractères - Prescription très longue, considérez la diviser")
-        elif char_count > 5000:
-            st.info(f"{char_count}/10 000 caractères - Prescription longue")
-        elif char_count > 0:
-            st.caption(f"{char_count}/10 000 caractères")
-        
         # Options d'analyse
         col1, col2, col3 = st.columns([2, 1, 1])
         
@@ -150,7 +144,7 @@ class AnalysisPage:
                 return
             
             # Afficher les médicaments trouvés
-            st.success(f"Médicaments identifiés: {', '.join(drugs)}")
+            st.success(f"Molécules identifiés: {', '.join(drugs)}")
             
             # Étape 2: Recherche de contexte documentaire si demandé
             context_docs = []
@@ -177,17 +171,12 @@ class AnalysisPage:
         combinations_count = len(drugs) * (len(drugs) - 1) // 2
         estimated_time = estimate_analysis_time(combinations_count)
         
-        # En-tête d'analyse avec informations
-        st.markdown("### Analyse complète en cours")
-        st.info(f"Analyse de {combinations_count} combinaisons + dosages (temps estimé: {estimated_time})")
-        
         # Conteneur pour la barre de progression
         progress_container = st.empty()
         
         # NOUVEAU: Utiliser l'analyse complète au lieu de juste les interactions
         with st.spinner("Analyse des interactions et dosages en cours..."):
             try:
-                # Analyse complète (interactions + dosage + contre-indications + redondances)
                 # context_docs est passé pour enrichir TOUTES les analyses
                 complete_result = self.llm_analyzer.analyze_prescription_complete(question, context_docs)
                 
@@ -205,7 +194,8 @@ class AnalysisPage:
                         'dosage': complete_result.get('dosage'),
                         'contraindications': complete_result.get('contraindications'),
                         'redundancy': complete_result.get('redundancy'),
-                        'administration_routes': complete_result.get('administration_routes'),  # NOUVEAU: Ajout voies d'administration
+                        'administration_routes': complete_result.get('administration_routes'),
+                        'side_effects': complete_result.get('side_effects'),  # NOUVEAU: Ajout effets secondaires
                         'context_used': len(context_docs) > 0,
                         'analysis_type': 'complete'
                     }
@@ -294,12 +284,21 @@ class AnalysisPage:
             elif administration_route_data['stats']['total_issues'] > 0:
                 risk_factors.append('administration_route_moderate')
         
+        # NOUVEAU: Facteurs liés aux effets secondaires
+        side_effects_data = analysis.get('side_effects')
+        if side_effects_data:
+            if side_effects_data['stats']['has_critical_effects']:
+                risk_factors.append('side_effects_critical')
+            elif side_effects_data['stats']['total_side_effects'] > 0:
+                risk_factors.append('side_effects_moderate')
+        
         # Évaluation globale
         if ('interactions_major' in risk_factors or 
             'dosage_critical' in risk_factors or 
             'contraindication_critical' in risk_factors or
             'redundancy_critical' in risk_factors or
-            'administration_route_critical' in risk_factors):
+            'administration_route_critical' in risk_factors or
+            'side_effects_critical' in risk_factors):
             return {
                 'level': 'ÉLEVÉ',
                 'description': 'Révision urgente',
@@ -309,7 +308,8 @@ class AnalysisPage:
               'dosage_moderate' in risk_factors or 
               'contraindication_moderate' in risk_factors or
               'redundancy_moderate' in risk_factors or
-              'administration_route_moderate' in risk_factors):
+              'administration_route_moderate' in risk_factors or
+              'side_effects_moderate' in risk_factors):
             return {
                 'level': 'MODÉRÉ', 
                 'description': 'Surveillance requise',
@@ -321,136 +321,30 @@ class AnalysisPage:
                 'description': 'Prescription acceptable',
                 'color': 'success'
             }
-        
-    def _render_global_overview(self, analysis: Dict):
-        """Affiche la vue d'ensemble globale avec toutes les métriques"""
-        st.markdown("#### 📊 Vue d'ensemble de l'analyse")
-        
-        # Métriques globales - Utiliser une ligne avec plus de colonnes pour inclure toutes les métriques
-        col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
-        
-        with col1:
-            create_metric_card("Médicaments", str(len(analysis['drugs'])))
-        
-        with col2:
-            # Métriques interactions
-            interactions_data = analysis.get('interactions')
-            if interactions_data:
-                major_count = interactions_data['stats']['major']
-                create_metric_card("Interactions Major", str(major_count))
-            else:
-                create_metric_card("Interactions Major", "N/A")
-        
-        with col3:
-            # Métriques dosage
-            dosage_data = analysis.get('dosage')
-            if dosage_data:
-                dosage_issues = dosage_data['stats']['total_issues']
-                create_metric_card("Problèmes dosage", str(dosage_issues))
-            else:
-                create_metric_card("Problèmes dosage", "N/A")
-        
-        with col4:
-            # Métriques contre-indications
-            contraindication_data = analysis.get('contraindications')
-            if contraindication_data:
-                contraindication_count = contraindication_data['stats']['total_contraindications']
-                create_metric_card("Contre-indications", str(contraindication_count))
-            else:
-                create_metric_card("Contre-indications", "N/A")
-        
-        with col5:
-            # Métriques redondances
-            redundancy_data = analysis.get('redundancy')
-            if redundancy_data:
-                redundancy_count = redundancy_data['stats']['total_redundancies']
-                create_metric_card("Redondances", str(redundancy_count))
-            else:
-                create_metric_card("Redondances", "N/A")
-        
-        with col6:
-            # NOUVEAU: Métriques voies d'administration
-            administration_route_data = analysis.get('administration_routes')
-            if administration_route_data:
-                route_count = administration_route_data['stats']['total_issues']
-                create_metric_card("Voies d'admin.", str(route_count))
-            else:
-                create_metric_card("Voies d'admin.", "N/A")
-        
-        with col7:
-            # Score de risque global
-            risk_score = self._calculate_global_risk_score(analysis)
-            create_metric_card("Risque global", risk_score['level'])
     
     def _render_prescription_evaluation(self, analysis: Dict):
         """Affiche l'évaluation globale de la prescription"""
         st.markdown("---")
-        st.markdown("### 🏥 Évaluation globale de la prescription")
+        st.markdown("### Évaluation globale de la prescription")
         
         risk_score = self._calculate_global_risk_score(analysis)
         
         if risk_score['level'] == 'ÉLEVÉ':
-            st.error(f"🔴 **PRESCRIPTION À RISQUE ÉLEVÉ** - {risk_score['description']}")
+            st.error(f"**PRESCRIPTION À RISQUE** - {risk_score['description']}")
         elif risk_score['level'] == 'MODÉRÉ':
-            st.warning(f"🟡 **PRESCRIPTION À RISQUE MODÉRÉ** - {risk_score['description']}")
+            st.warning(f"**PRESCRIPTION À RISQUE** - {risk_score['description']}")
         else:
-            st.success(f"🟢 **PRESCRIPTION À RISQUE FAIBLE** - {risk_score['description']}")
+            st.success(f"**PRESCRIPTION À RISQUE FAIBLE** - {risk_score['description']}")
         
-        # Recommandations générales
-        st.markdown("#### Recommandations générales:")
-        
-        recommendations = []
-        
-        # Recommandations basées sur les interactions
-        interactions_data = analysis.get('interactions')
-        if interactions_data and interactions_data['stats']['major'] > 0:
-            recommendations.append("⚠️ **Interactions majeures détectées** - Éviter les associations ou surveillance très étroite")
-        
-        # Recommandations basées sur le dosage
-        dosage_data = analysis.get('dosage')
-        if dosage_data and dosage_data['stats']['has_critical_issues']:
-            recommendations.append("⚠️ **Problèmes de dosage critiques** - Ajustements immédiats nécessaires")
-        
-        # Recommandations basées sur les contre-indications
-        contraindication_data = analysis.get('contraindications')
-        if contraindication_data and contraindication_data['stats']['has_critical_contraindications']:
-            recommendations.append("🚨 **Contre-indications absolues détectées** - Arrêt immédiat des médicaments concernés")
-        elif contraindication_data and contraindication_data['stats']['total_contraindications'] > 0:
-            recommendations.append("⚠️ **Contre-indications relatives** - Surveillance renforcée nécessaire")
-        
-        # NOUVEAU: Recommandations basées sur les redondances
-        redundancy_data = analysis.get('redundancy')
-        if redundancy_data and redundancy_data['stats']['has_critical_redundancies']:
-            recommendations.append("🚨 **Redondances critiques détectées** - Optimisation urgente de la prescription")
-        elif redundancy_data and redundancy_data['stats']['total_redundancies'] > 0:
-            recommendations.append("💡 **Redondances détectées** - Optimisation thérapeutique recommandée")
-        
-        # NOUVEAU: Recommandations basées sur les voies d'administration
-        administration_route_data = analysis.get('administration_routes')
-        if administration_route_data and administration_route_data['stats']['has_critical_issues']:
-            recommendations.append("🔥 **Voies d'administration critiques détectées** - Modification immédiate nécessaire")
-        elif administration_route_data and administration_route_data['stats']['total_issues'] > 0:
-            recommendations.append("⚠️ **Problèmes de voie d'administration** - Ajustements recommandés")
-        
-        # Recommandations générales
-        recommendations.extend([
-            "📋 **Révision pharmaceutique** recommandée dans les 24h",
-            "👨‍⚕️ **Consultation médicale** si modification nécessaire", 
-            "📊 **Surveillance clinique** renforcée pendant 48-72h",
-            "🏥 **Documentation** de toute modification dans le dossier patient"
-        ])
-        
-        for rec in recommendations:
-            st.markdown(f"- {rec}")
     
     def _render_complete_analysis_results(self, analysis: Dict):
         """Affiche les résultats d'une analyse complète"""
         
         # 1. Vue d'ensemble globale avec toutes les métriques
-        self._render_global_overview(analysis)
+        #self._render_global_overview(analysis)
         
         # 2. Organisation par onglets pour chaque section
-        tab1, tab2, tab3, tab4, tab5 = st.tabs(["Interactions médicamenteuses", "Dosage", "Contre-indications", "Redondance thérapeutique", "Voie d'administration"])
+        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Interactions médicamenteuses", "Dosage", "Contre-indications", "Redondance thérapeutique", "Voie d'administration", "Effets secondaires"])
         
         with tab1:
             # Section interactions (existante)
@@ -463,7 +357,7 @@ class AnalysisPage:
                 self._render_metrics(stats)
                 
                 # Graphiques interactions
-                st.subheader("Visualisations des interactions")
+                #st.subheader("Visualisations des interactions")
                 display_interaction_charts(interactions)
                 
                 # Tableau interactions
@@ -503,6 +397,14 @@ class AnalysisPage:
             else:
                 st.warning("Données de voies d'administration non disponibles")
         
+        with tab6:
+            # NOUVELLE SECTION: Effets secondaires
+            side_effects_data = analysis.get('side_effects')
+            if side_effects_data:
+                display_side_effects_analysis_section(side_effects_data)
+            else:
+                st.warning("Données d'effets secondaires non disponibles")
+        
         # 3. Évaluation globale de la prescription
         self._render_prescription_evaluation(analysis)
         
@@ -534,13 +436,13 @@ class AnalysisPage:
         moderate_count = stats['moderate']
 
         if major_count > 0 or moderate_count > 0:
-            st.error("🔴 **PRESCRIPTION PORTEUSE DE RISQUE**")
+            st.error("**PRESCRIPTION PORTEUSE DE RISQUE**")
             if major_count > 0:
-                st.write(f"⚠️ {major_count} interaction(s) majeure(s) détectée(s)")
+                st.write(f"{major_count} interaction(s) majeure(s) détectée(s)")
             if moderate_count > 0:
-                st.write(f"⚠️ {moderate_count} interaction(s) modérée(s) détectée(s)")
+                st.write(f"{moderate_count} interaction(s) modérée(s) détectée(s)")
         else:
-            st.success("✅ **PRESCRIPTION SAINE**")
+            st.success("**PRESCRIPTION SAINE**")
             st.write("Aucune interaction majeure ou modérée détectée")
 
         st.markdown("---")
@@ -562,7 +464,7 @@ class AnalysisPage:
         
         analysis = st.session_state.current_analysis
         
-        st.markdown("---")
+        #st.markdown("---")
         st.subheader("Résultats de l'analyse")
         
         # Vérifier le type d'analyse
@@ -577,35 +479,16 @@ class AnalysisPage:
     
     def _render_metrics(self, stats: Dict):
         """Affiche les métriques principales"""
-        col1, col2, col3, col4, col5, col6 = st.columns(6)
+        col1, col2, col3 = st.columns(3)
         
         with col1:
-            create_metric_card("Médicaments", str(stats['total_drugs']))
+            create_metric_card("Nombre des Médicaments", str(stats['total_drugs']))
         
         with col2:
-            create_metric_card("Combinaisons", str(stats['total_combinations']))
-        
+            create_metric_card("Nombre des Combinaisons", str(stats['total_combinations']))
+
         with col3:
-            major_count = stats['major']
-            create_metric_card("Major", str(major_count))
-        
-        with col4:
-            create_metric_card("Moderate", str(stats['moderate']))
-        
-        with col5:
-            create_metric_card("Minor", str(stats['minor']))
-        
-        with col6:
-            create_metric_card("Aucune", str(stats.get('aucune', 0)))
-        
-        # Métriques supplémentaires
-        if 'analysis_time' in stats:
-            col1, col2 = st.columns(2)
-            with col1:
-                create_metric_card("Temps d'analyse", f"{stats['analysis_time']:.1f}s")
-            with col2:
-                avg_time = stats.get('avg_time_per_combination', 0)
-                create_metric_card("Temps moyen/combinaison", f"{avg_time:.2f}s")
+            create_metric_card("Temps d'analyse", f"{stats['analysis_time']:.1f}s")
 
 def render_analysis_page():
     """Fonction utilitaire pour afficher la page d'analyse"""

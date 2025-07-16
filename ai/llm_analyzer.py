@@ -16,6 +16,7 @@ from ai.dosage_analyzer import DosageAnalyzer
 from ai.contraindication_analyzer import ContraindicationAnalyzer
 from ai.redundancy_analyzer import RedundancyAnalyzer
 from ai.administration_route_analyzer import AdministrationRouteAnalyzer
+from ai.side_effects_analyzer import SideEffectsAnalyzer
 from config.settings import settings
 from config.logging_config import get_logger
 from core.exceptions import LLMAnalysisError
@@ -768,6 +769,9 @@ class LLMAnalyzer:
         # NOUVEAU: Ajouter l'analyseur de voies d'administration
         self.administration_route_analyzer = AdministrationRouteAnalyzer(use_cache)
         
+        # NOUVEAU: Ajouter l'analyseur d'effets secondaires
+        self.side_effects_analyzer = SideEffectsAnalyzer(use_cache)
+        
         # Statistiques d'utilisation
         self.usage_stats = {
             'extractions': 0,
@@ -777,6 +781,7 @@ class LLMAnalyzer:
             'contraindication_analyses': 0,  # NOUVEAU
             'redundancy_analyses': 0,  # NOUVEAU
             'administration_route_analyses': 0,  # NOUVEAU
+            'side_effects_analyses': 0,  # NOUVEAU
             'total_llm_calls': 0,
             'cache_hits': 0
         }
@@ -842,6 +847,21 @@ class LLMAnalyzer:
         """
         self.usage_stats['administration_route_analyses'] += 1
         return self.administration_route_analyzer.analyze_administration_routes(prescription, patient_info, context_docs)
+    
+    def analyze_side_effects(self, prescription: str, patient_info: str = "", context_docs=None) -> Dict:
+        """
+        Analyse les effets secondaires de la prescription (interface simplifiée)
+        
+        Args:
+            prescription: Texte de la prescription
+            patient_info: Informations sur le patient
+            context_docs: Documents de contexte de la base vectorielle
+            
+        Returns:
+            Résultat de l'analyse des effets secondaires
+        """
+        self.usage_stats['side_effects_analyses'] += 1
+        return self.side_effects_analyzer.analyze_side_effects(prescription, patient_info, context_docs)
     
     # 4. Modifier la méthode get_usage_statistics pour inclure le dosage
     
@@ -1116,7 +1136,10 @@ class LLMAnalyzer:
             # 7. NOUVEAU: Analyse des voies d'administration
             administration_route_result = self.analyze_administration_routes(prescription, patient_info, context_docs)
             
-            # 7. Résultat combiné
+            # 8. NOUVEAU: Analyse des effets secondaires
+            side_effects_result = self.analyze_side_effects(prescription, patient_info, context_docs)
+            
+            # 9. Résultat combiné
             complete_result = {
                 'drugs': drugs,
                 'patient_info': patient_info,
@@ -1125,6 +1148,7 @@ class LLMAnalyzer:
                 'contraindications': contraindication_result,  # NOUVEAU
                 'redundancy': redundancy_result,  # NOUVEAU
                 'administration_routes': administration_route_result,  # NOUVEAU
+                'side_effects': side_effects_result,  # NOUVEAU
                 'timestamp': datetime.now().isoformat(),
                 'analysis_type': 'complete'
             }
@@ -1134,7 +1158,8 @@ class LLMAnalyzer:
                        f"{dosage_result['stats']['total_issues']} dosage issues, "
                        f"{contraindication_result['stats']['total_contraindications']} contraindications, "
                        f"{redundancy_result['stats']['total_redundancies']} redundancies, "
-                       f"{administration_route_result['stats']['total_issues']} administration route issues")
+                       f"{administration_route_result['stats']['total_issues']} administration route issues, "
+                       f"{side_effects_result['stats']['total_side_effects']} side effects")
             
             return complete_result
             

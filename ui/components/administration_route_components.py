@@ -26,39 +26,12 @@ def display_administration_route_section(route_result: Dict):
     route_data = route_result['administration_route_analysis']
     stats = route_result['stats']
     
-    # En-tête de section
-    st.markdown("### 💉 Voie d'administration inappropriée")
-    
-    # Vérifier s'il y a des problèmes
-    if stats['total_issues'] == 0:
-        create_status_message(
-            "✅ Aucun problème de voie d'administration détecté dans cette prescription",
-            "success"
-        )
-        
-        # Afficher quand même les médicaments avec voie appropriée s'il y en a
-        if stats.get('voie_appropriee_count', 0) > 0:
-            st.info(f"📋 {stats['voie_appropriee_count']} médicament(s) avec voie d'administration appropriée")
-            _display_appropriate_routes(route_data.get('voie_appropriee', []))
-        return
-    
-    # Alerte si problèmes critiques
-    if stats.get('has_critical_issues', False):
-        create_status_message(
-            f"🚨 {stats['total_issues']} problème(s) de voie d'administration détecté(s) - Gravité élevée présente",
-            "error"
-        )
-    else:
-        create_status_message(
-            f"⚠️ {stats['total_issues']} problème(s) de voie d'administration détecté(s)",
-            "warning"
-        )
     
     # Métriques des voies d'administration
-    display_route_metrics(stats)
+    #display_route_metrics(stats)
     
     # Graphiques des voies d'administration
-    display_route_charts(route_data, stats)
+    #display_route_charts(route_data, stats)
     
     # Tableau détaillé
     display_route_table(route_data)
@@ -84,205 +57,7 @@ def _display_appropriate_routes(appropriate_routes: List[Dict]):
             voie = item.get('voie_prescrite', 'Non spécifiée')
             commentaire = item.get('commentaire', 'Voie appropriée')
             
-            st.markdown(f"✅ **{medicament}** ({voie}): {commentaire}")
-
-def display_route_metrics(stats: Dict):
-    """
-    Affiche les métriques des voies d'administration
-    
-    Args:
-        stats: Statistiques des voies d'administration
-    """
-    col1, col2, col3, col4, col5 = st.columns(5)
-    
-    with col1:
-        total_meds = stats.get('total_medications', 0)
-        create_metric_card(
-            "Médicaments analysés", 
-            str(total_meds)
-        )
-    
-    with col2:
-        inappropriee_count = stats.get('voie_inappropriee_count', 0)
-        create_metric_card(
-            "Voies inappropriées", 
-            str(inappropriee_count)
-        )
-    
-    with col3:
-        incompatible_count = stats.get('voie_incompatible_count', 0)
-        create_metric_card(
-            "Incompatibilités", 
-            str(incompatible_count)
-        )
-    
-    with col4:
-        risquee_count = stats.get('voie_risquee_count', 0)
-        create_metric_card(
-            "Voies risquées", 
-            str(risquee_count)
-        )
-    
-    with col5:
-        total_issues = stats.get('total_issues', 0)
-        create_metric_card(
-            "Total problèmes", 
-            str(total_issues)
-        )
-
-def display_route_charts(route_data: Dict, stats: Dict):
-    """
-    Affiche les graphiques d'analyse des voies d'administration
-    
-    Args:
-        route_data: Données d'analyse des voies d'administration
-        stats: Statistiques calculées
-    """
-    # Vérifier s'il y a des données à afficher
-    if stats.get('total_issues', 0) == 0 and stats.get('voie_appropriee_count', 0) == 0:
-        st.info("Aucune donnée à visualiser")
-        return
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # Graphique en camembert : répartition des types de problèmes
-        fig_pie = create_route_pie_chart(stats)
-        if fig_pie:
-            st.plotly_chart(fig_pie, use_container_width=True)
-        else:
-            st.info("Graphique de répartition non disponible")
-    
-    with col2:
-        # Graphique en barres : répartition par gravité
-        fig_bar = create_route_severity_chart(stats)
-        if fig_bar:
-            st.plotly_chart(fig_bar, use_container_width=True)
-        else:
-            st.info("Graphique de gravité non disponible")
-
-def create_route_pie_chart(stats: Dict) -> Optional[go.Figure]:
-    """
-    Crée un graphique en camembert pour les types de problèmes de voies d'administration
-    
-    Args:
-        stats: Statistiques des voies d'administration
-        
-    Returns:
-        Figure Plotly ou None
-    """
-    try:
-        # Préparer les données
-        labels = []
-        values = []
-        colors = []
-        
-        inappropriee_count = stats.get('voie_inappropriee_count', 0)
-        incompatible_count = stats.get('voie_incompatible_count', 0)
-        risquee_count = stats.get('voie_risquee_count', 0)
-        appropriee_count = stats.get('voie_appropriee_count', 0)
-        
-        if inappropriee_count > 0:
-            labels.append('Voie inappropriée')
-            values.append(inappropriee_count)
-            colors.append('#DC3545')  # Rouge
-        
-        if incompatible_count > 0:
-            labels.append('Incompatibilité') 
-            values.append(incompatible_count)
-            colors.append('#E83E8C')  # Rose
-        
-        if risquee_count > 0:
-            labels.append('Voie risquée')
-            values.append(risquee_count)
-            colors.append('#FD7E14')  # Orange
-        
-        if appropriee_count > 0:
-            labels.append('Voie appropriée')
-            values.append(appropriee_count)
-            colors.append('#28A745')  # Vert
-        
-        if not values:
-            return None
-        
-        # Créer le graphique
-        fig = go.Figure(data=[go.Pie(
-            labels=labels,
-            values=values,
-            marker_colors=colors,
-            hole=0.3,
-            textinfo='label+value+percent',
-            textfont_size=12
-        )])
-        
-        fig.update_layout(
-            title="Répartition des problèmes de voies d'administration",
-            showlegend=True,
-            margin=dict(t=50, b=0, l=0, r=0)
-        )
-        
-        return fig
-        
-    except Exception as e:
-        logger.error(f"Error creating route pie chart: {e}")
-        return None
-
-def create_route_severity_chart(stats: Dict) -> Optional[go.Figure]:
-    """
-    Crée un graphique en barres pour la gravité des problèmes
-    
-    Args:
-        stats: Statistiques des voies d'administration
-        
-    Returns:
-        Figure Plotly ou None
-    """
-    try:
-        gravite_data = stats.get('gravite_repartition', {})
-        
-        # S'assurer que toutes les clés existent
-        gravite_data = {
-            'Faible': gravite_data.get('Faible', 0),
-            'Modérée': gravite_data.get('Modérée', 0),
-            'Élevée': gravite_data.get('Élevée', 0)
-        }
-        
-        # Filtrer les valeurs non nulles
-        labels = [k for k, v in gravite_data.items() if v > 0]
-        values = [v for v in gravite_data.values() if v > 0]
-        
-        if not values:
-            return None
-        
-        # Couleurs selon la gravité
-        color_map = {
-            'Faible': '#28A745',
-            'Modérée': '#FD7E14', 
-            'Élevée': '#DC3545'
-        }
-        colors = [color_map.get(label, '#6C757D') for label in labels]
-        
-        # Créer le graphique
-        fig = go.Figure(data=[go.Bar(
-            x=labels,
-            y=values,
-            marker_color=colors,
-            text=values,
-            textposition='auto'
-        )])
-        
-        fig.update_layout(
-            title="Gravité des problèmes de voies d'administration",
-            xaxis_title="Niveau de gravité",
-            yaxis_title="Nombre de problèmes",
-            margin=dict(t=50, b=50, l=50, r=50)
-        )
-        
-        return fig
-        
-    except Exception as e:
-        logger.error(f"Error creating route severity chart: {e}")
-        return None
+            st.markdown(f"**{medicament}** ({voie}): {commentaire}")
 
 def display_route_table(route_data: Dict):
     """
@@ -355,9 +130,6 @@ def display_route_table(route_data: Dict):
     
     # Afficher le tableau
     st.dataframe(df, use_container_width=True)
-    
-    # Informations supplémentaires
-    st.caption(f"Total: {len(table_data)} problème(s) de voie d'administration")
 
 def display_route_recommendations(route_data: Dict):
     """
@@ -366,8 +138,6 @@ def display_route_recommendations(route_data: Dict):
     Args:
         route_data: Données d'analyse des voies d'administration
     """
-    st.markdown("#### 💡 Recommandations")
-    
     # Collecter toutes les recommandations
     recommendations = []
     
@@ -419,11 +189,11 @@ def display_route_recommendations(route_data: Dict):
         recommandation = rec['recommandation']
         
         if gravite == 'Élevée':
-            st.error(f"🚨 **{medicament}** ({type_prob}): {recommandation}")
+            st.error(f"**{medicament}** ({type_prob}): {recommandation}")
         elif gravite == 'Modérée':
-            st.warning(f"⚠️ **{medicament}** ({type_prob}): {recommandation}")
+            st.warning(f"**{medicament}** ({type_prob}): {recommandation}")
         else:
-            st.info(f"💡 **{medicament}** ({type_prob}): {recommandation}")
+            st.info(f"**{medicament}** ({type_prob}): {recommandation}")
     
     # Recommandations générales
     _display_general_route_recommendations()
@@ -456,7 +226,6 @@ def get_administration_route_summary_for_overview(route_result: Dict) -> Dict:
             'status': 'no_data',
             'message': 'Pas de données de voies d\'administration',
             'color': 'secondary',
-            'icon': '❓',
             'count': 0
         }
     
@@ -470,7 +239,6 @@ def get_administration_route_summary_for_overview(route_result: Dict) -> Dict:
             'status': 'ok',
             'message': 'Voies appropriées',
             'color': 'success',
-            'icon': '✅',
             'count': total_meds
         }
     elif has_critical:
@@ -478,7 +246,6 @@ def get_administration_route_summary_for_overview(route_result: Dict) -> Dict:
             'status': 'critical',
             'message': f"{total_issues} problème(s) critique(s)",
             'color': 'error',
-            'icon': '🚨',
             'count': total_issues
         }
     else:
@@ -486,7 +253,6 @@ def get_administration_route_summary_for_overview(route_result: Dict) -> Dict:
             'status': 'warning',
             'message': f"{total_issues} problème(s) de voie",
             'color': 'warning', 
-            'icon': '⚠️',
             'count': total_issues
         }
 
