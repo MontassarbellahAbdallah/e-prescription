@@ -3,12 +3,8 @@ Composants UI pour l'analyse des voies d'administration
 """
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from typing import Dict, List, Optional
-from datetime import datetime, timedelta
+from typing import Dict
 from config.logging_config import get_logger
-from ui.styles import create_metric_card, create_status_message
 
 logger = get_logger(__name__)
 
@@ -24,15 +20,6 @@ def display_administration_route_section(route_result: Dict):
         return
     
     route_data = route_result['administration_route_analysis']
-    stats = route_result['stats']
-    
-    
-    # Métriques des voies d'administration
-    #display_route_metrics(stats)
-    
-    # Graphiques des voies d'administration
-    #display_route_charts(route_data, stats)
-    
     # Tableau détaillé
     display_route_table(route_data)
     
@@ -40,24 +27,6 @@ def display_administration_route_section(route_result: Dict):
     
     # Recommandations
     display_route_recommendations(route_data)
-
-def _display_appropriate_routes(appropriate_routes: List[Dict]):
-    """
-    Affiche les médicaments avec voie d'administration appropriée
-    
-    Args:
-        appropriate_routes: Liste des médicaments avec voie appropriée
-    """
-    if not appropriate_routes:
-        return
-    
-    with st.expander("Voir les voies d'administration appropriées", expanded=False):
-        for item in appropriate_routes:
-            medicament = item.get('medicament', 'Inconnu')
-            voie = item.get('voie_prescrite', 'Non spécifiée')
-            commentaire = item.get('commentaire', 'Voie appropriée')
-            
-            st.markdown(f"**{medicament}** ({voie}): {commentaire}")
 
 def display_route_table(route_data: Dict):
     """
