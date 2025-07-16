@@ -4,8 +4,7 @@ Composants de graphiques pour la visualisation des données d'interactions
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-import plotly.express as px
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Any
 from utils.constants import LEVEL_COLORS, PLOTLY_CONFIG
 
 class InteractionCharts:
@@ -333,35 +332,12 @@ def display_interaction_charts(interactions: List[Dict]):
     charts = InteractionCharts(interactions)
     
     # Graphiques en colonnes
-    col1, col2 = st.columns(2)
-    
-    # with col1:
-    #     st.plotly_chart(
-    #         charts.create_level_distribution_pie(),
-    #         use_container_width=True,
-    #         config=PLOTLY_CONFIG
-    #     )
-    
-    # with col2:
-    #     st.plotly_chart(
-    #         charts.create_level_distribution_bar(),
-    #         use_container_width=True,
-    #         config=PLOTLY_CONFIG
-    #     )
     with st.container():
         st.plotly_chart(
             charts.create_level_distribution_bar(),
             use_container_width=True,
             config=PLOTLY_CONFIG
         )
-    
-    
-    # Graphique de fréquence des médicaments supprimé
-    # st.plotly_chart(
-    #     charts.create_drug_frequency_chart(),
-    #     use_container_width=True,
-    #     config=PLOTLY_CONFIG
-    # )
 
 def display_statistics_charts(stats: Dict[str, Any]):
     """
