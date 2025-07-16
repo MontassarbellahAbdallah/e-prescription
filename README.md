@@ -7,14 +7,14 @@ This application is an AI-powered medical prescription analyzer that uses Google
 
 ### 1. Comprehensive Risk Analysis
 The application analyzes prescriptions across multiple dimensions:
-- 💊 **Drug Interactions**: Detection and classification of interactions (Major/Moderate/Minor)
-- ⚖️ **Dosage Issues**: Identification of overdosage and underdosage
-- 🚫 **Contraindications**: Detection of absolute and relative contraindications
-- 🔄 **Therapeutic Redundancy**: Identification of duplicate therapies and unnecessary combinations
-- 💉 **Administration Routes**: Analysis of inappropriate administration routes and risks
-- ⏱️ **Treatment Duration**: Evaluation of excessive or insufficient treatment periods
-- ⚠️ **Potential Side Effects**: Analysis of cumulative side effects and severe risks
-- 📋 **Monitoring Recommendations**: Recommendations for clinical and laboratory monitoring
+- **Drug Interactions**: Detection and classification of interactions (Major/Moderate/Minor)
+- **Dosage Issues**: Identification of overdosage and underdosage
+- **Contraindications**: Detection of absolute and relative contraindications
+- **Therapeutic Redundancy**: Identification of duplicate therapies and unnecessary combinations
+- **Administration Routes**: Analysis of inappropriate administration routes and risks
+- **Treatment Duration**: Evaluation of excessive or insufficient treatment periods
+- **Potential Side Effects**: Analysis of cumulative side effects and severe risks
+- **Monitoring Recommendations**: Recommendations for clinical and laboratory monitoring
 
 ### 2. Advanced Visualizations
 - Interactive tables with filtering capabilities
