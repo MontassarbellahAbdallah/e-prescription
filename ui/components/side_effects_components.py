@@ -3,15 +3,9 @@ Composants UI pour l'analyse d'effets secondaires
 """
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
-import plotly.figure_factory as ff
-from plotly.subplots import make_subplots
-import networkx as nx
-from typing import Dict, List, Optional
-import numpy as np
+from typing import Dict, Optional
 from config.logging_config import get_logger
-from ui.styles import create_metric_card, create_status_message
 
 logger = get_logger(__name__)
 
@@ -339,20 +333,6 @@ def display_side_effects_table(side_effects_data: Dict):
     
     # Créer le DataFrame
     df = pd.DataFrame(table_data)
-    
-    # Ajouter un filtre par type si plusieurs types présents
-    types_disponibles = df['Type'].unique().tolist()
-    # if len(types_disponibles) > 1:
-    #     col1, col2 = st.columns([3, 1])
-    #     with col2:
-    #         filtre_type = st.selectbox(
-    #             "Filtrer par type:",
-    #             ['Tous'] + types_disponibles,
-    #             key="side_effects_filter"
-    #         )
-        
-    #     if filtre_type != 'Tous':
-    #         df = df[df['Type'] == filtre_type]
     
     # Afficher le tableau
     st.dataframe(df, use_container_width=True)
