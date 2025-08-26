@@ -234,9 +234,8 @@ class DrugExtractor:
     @measure_execution_time
     def extract_drug_names(self, question: str) -> List[str]:
         """
-        Extrait les noms de médicaments avec SEULEMENT deux méthodes:
-        - MÉTHODE 1: CSV seul (vérification dans le fichier CSV uniquement)
-        - MÉTHODE 2: LLM seul (extraction par l'IA uniquement)
+        Extrait les noms de médicaments en utilisant UNIQUEMENT le LLM
+        comme dans la version RAG_up.py
         
         Args:
             question: Question contenant potentiellement des médicaments
@@ -259,30 +258,24 @@ class DrugExtractor:
                 return cached_drugs
         
         try:
-            logger.info(f"Starting SIMPLE drug extraction for: {question[:100]}...")
+            logger.info(f"Starting LLM-ONLY drug extraction for: {question[:100]}...")
             
-            # MÉTHODE 1: Essayer d'abord le CSV SEUL
-            csv_drugs = self._extract_from_csv_only(question)
+            # Utiliser DIRECTEMENT le LLM comme dans RAG_up.py
+            prompt = PROMPT_TEMPLATES['drug_extraction_simple'].format(question=question)
+            response = self.cached_invoke(prompt)
+            content = response.content.strip()
             
-            if csv_drugs:
-                # CSV a trouvé des molécules -> UTILISER UNIQUEMENT ÇA
-                logger.info(f"CSV extraction successful: {len(csv_drugs)} drugs found - {csv_drugs}")
-                final_drugs = csv_drugs
-                method = 'csv_only'
+            if content.upper() == "AUCUN":
+                final_drugs = []
             else:
-                # CSV n'a rien trouvé -> UTILISER LLM SEUL
-                logger.info("No molecules found in CSV, using LLM extraction")
-                llm_drugs = self._extract_with_llm_only(question)
-                final_drugs = llm_drugs
-                method = 'llm_only'
-            
-            # Nettoyer les résultats finaux
-            final_drugs = [clean_drug_name(drug) for drug in final_drugs if drug and len(drug.strip()) > 1]
-            final_drugs = sorted(list(set(final_drugs)))  # Dédupliquer
+                # Nettoyer les résultats
+                raw_drugs = [drug.strip() for drug in content.split(",") if drug.strip()]
+                final_drugs = [clean_drug_name(drug) for drug in raw_drugs if len(drug.strip()) > 1]
+                final_drugs = sorted(list(set(final_drugs)))  # Dédupliquer
             
             # Statistiques simples
             logger.info(
-                f"SIMPLE extraction completed: {len(final_drugs)} drugs found using {method} - {final_drugs}"
+                f"LLM-ONLY extraction completed: {len(final_drugs)} drugs found - {final_drugs}"
             )
             
             # Mettre en cache

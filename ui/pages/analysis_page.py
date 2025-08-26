@@ -344,7 +344,7 @@ class AnalysisPage:
         #self._render_global_overview(analysis)
         
         # 2. Organisation par onglets pour chaque section
-        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Interactions médicamenteuses", "Dosage", "Contre-indications", "Redondance thérapeutique", "Voie d'administration", "Effets secondaires"])
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["Interactions médicamenteuses", "Dosage", "Contre-indications", "Redondance thérapeutique", "Voie d'administration"])
         
         with tab1:
             # Section interactions (existante)
@@ -397,13 +397,13 @@ class AnalysisPage:
             else:
                 st.warning("Données de voies d'administration non disponibles")
         
-        with tab6:
-            # NOUVELLE SECTION: Effets secondaires
-            side_effects_data = analysis.get('side_effects')
-            if side_effects_data:
-                display_side_effects_analysis_section(side_effects_data)
-            else:
-                st.warning("Données d'effets secondaires non disponibles")
+        # with tab6:
+        #     # NOUVELLE SECTION: Effets secondaires
+        #     side_effects_data = analysis.get('side_effects')
+        #     if side_effects_data:
+        #         display_side_effects_analysis_section(side_effects_data)
+        #     else:
+        #         st.warning("Données d'effets secondaires non disponibles")
         
         # 3. Évaluation globale de la prescription
         self._render_prescription_evaluation(analysis)
