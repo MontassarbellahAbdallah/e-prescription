@@ -133,7 +133,7 @@ class MedInteractionApp:
                 # )
                 # return
                 st.success(
-                    f"done"
+                    f"Système initialisé"
                 )
                 return
             
