@@ -279,8 +279,8 @@ class DataValidator:
         if len(cleaned) < 3:
             return False, cleaned
         
-        if len(cleaned) > 500:
-            cleaned = cleaned[:500]
+        if len(cleaned) > 200000:
+            cleaned = cleaned[:200000]
         
         return True, cleaned
     

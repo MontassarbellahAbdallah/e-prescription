@@ -492,7 +492,7 @@ class RAGProcessor:
         Returns:
             Tuple (documents, informations_sources)
         """
-        logger.info(f"Starting RAG search: query='{query[:100]}...', k={k}, threshold={score_threshold}")
+        logger.info(f"Starting RAG search: query='{query[:]}...', k={k}, threshold={score_threshold}")
         
         if not self.vector_store:
             logger.error("No vector store available for search - RAG not initialized")
@@ -654,7 +654,7 @@ class RAGProcessor:
                 best_score = score
                 best_sentence = sentence
         
-        return best_sentence[:200] + "..." if len(best_sentence) > 200 else best_sentence
+        return best_sentence[:] + "..." if len(best_sentence) > 200 else best_sentence
     
     def _get_citation_context(self, content: str, exact_quote: str) -> str:
         """
@@ -668,7 +668,7 @@ class RAGProcessor:
             Contexte avec citation mise en évidence
         """
         if not exact_quote or exact_quote not in content:
-            return content[:300] + "..." if len(content) > 300 else content
+            return content[:] + "..." if len(content) > 300 else content
         
         # Trouver la position de la citation
         quote_start = content.find(exact_quote)
@@ -842,7 +842,7 @@ class RAGProcessor:
             }
         
         # Fallback: essayer de deviner à partir du contenu
-        logger.warning(f"No DOC_META marker found in content: {doc.page_content[:100]}...")
+        logger.warning(f"No DOC_META marker found in content: {doc.page_content[:]}...")
         
         # Essayer de détecter le type de document depuis le contenu
         content_lower = doc.page_content.lower()
@@ -905,7 +905,7 @@ class RAGProcessor:
         
         return cleaned.strip()
     
-    def _create_content_preview(self, content: str, max_length: int = 200) -> str:
+    def _create_content_preview(self, content: str, max_length: int = 2000) -> str:
         """
         Crée un aperçu du contenu
         

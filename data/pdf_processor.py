@@ -391,9 +391,9 @@ class PDFProcessor:
         lines = text.split('\n')
         potential_titles = []
         
-        for line in lines[:10]:  # Analyser les 10 premières lignes
+        for line in lines[:]:  # Analyser les 10 premières lignes
             line = line.strip()
-            if len(line) < 100 and len(line) > 5:  # Titre potentiel
+            if len(line) < 10000 and len(line) > 50:  # Titre potentiel
                 if line.isupper() or line.count(' ') < 5:  # Titre en majuscules ou court
                     potential_titles.append(line)
         
@@ -410,7 +410,7 @@ class PDFProcessor:
         section_title = potential_titles[0] if potential_titles else f"Page {page_num}"
         
         return {
-            'title': section_title[:100],  # Limiter la longueur
+            'title': section_title[:1000],  # Limiter la longueur
             'type': section_type
         }
     

@@ -87,8 +87,8 @@ class DrugExtractor:
                             
                             # Ajouter aussi des variations communes
                             # Ex: "Sodium chloride" -> ["sodium chloride", "nacl"]
-                            variations = self._get_molecule_variations(clean_name)
-                            molecules.update(v.lower() for v in variations)
+                            #variations = self._get_molecule_variations(clean_name)
+                            #molecules.update(v.lower() for v in variations)
                     
                     logger.info(f"Successfully loaded {len(molecules)} molecule names and variations for CSV-only method")
                 else:
@@ -101,87 +101,87 @@ class DrugExtractor:
             
         return molecules
     
-    def _get_molecule_variations(self, molecule_name: str) -> list:
-        """
-        Génère des variations communes d'un nom de molécule
+    # def _get_molecule_variations(self, molecule_name: str) -> list:
+    #     """
+    #     Génère des variations communes d'un nom de molécule
         
-        Args:
-            molecule_name: Nom de base de la molécule
+    #     Args:
+    #         molecule_name: Nom de base de la molécule
             
-        Returns:
-            Liste des variations possibles
-        """
-        variations = [molecule_name]
-        name_lower = molecule_name.lower()
+    #     Returns:
+    #         Liste des variations possibles
+    #     """
+    #     variations = [molecule_name]
+    #     name_lower = molecule_name.lower()
         
-        # Variations communes pour certaines molécules
-        common_variations = {
-            'acetylsalicylic acid': ['aspirin', 'asa'],
-            'sodium chloride': ['nacl', 'saline', 'normal saline'],
-            'potassium chloride': ['kcl'],
-            'magnesium sulfate': ['mgso4', 'epsom salt'],
-            'calcium chloride': ['cacl2'],
-            'sodium bicarbonate': ['nahco3', 'bicarbonate'],
-            'morphine sulfate': ['morphine'],
-            'heparin sodium': ['heparin'],
-            'insulin': ['insulin human', 'regular insulin']
-        }
+    #     # Variations communes pour certaines molécules
+    #     common_variations = {
+    #         'acetylsalicylic acid': ['aspirin', 'asa'],
+    #         'sodium chloride': ['nacl', 'saline', 'normal saline'],
+    #         'potassium chloride': ['kcl'],
+    #         'magnesium sulfate': ['mgso4', 'epsom salt'],
+    #         'calcium chloride': ['cacl2'],
+    #         'sodium bicarbonate': ['nahco3', 'bicarbonate'],
+    #         'morphine sulfate': ['morphine'],
+    #         'heparin sodium': ['heparin'],
+    #         'insulin': ['insulin human', 'regular insulin']
+    #     }
         
-        # Chercher des correspondances
-        for key, vars_list in common_variations.items():
-            if key in name_lower or name_lower in key:
-                variations.extend(vars_list)
+    #     # Chercher des correspondances
+    #     for key, vars_list in common_variations.items():
+    #         if key in name_lower or name_lower in key:
+    #             variations.extend(vars_list)
         
-        # Variations automatiques
-        # Retirer "sulfate", "sodium", etc.
-        words = name_lower.split()
-        if len(words) > 1:
-            # Version sans suffixes courants
-            filtered_words = [w for w in words if w not in ['sodium', 'sulfate', 'chloride', 'hydrochloride']]
-            if filtered_words and len(filtered_words) < len(words):
-                variations.append(' '.join(filtered_words))
+    #     # Variations automatiques
+    #     # Retirer "sulfate", "sodium", etc.
+    #     words = name_lower.split()
+    #     if len(words) > 1:
+    #         # Version sans suffixes courants
+    #         filtered_words = [w for w in words if w not in ['sodium', 'sulfate', 'chloride', 'hydrochloride']]
+    #         if filtered_words and len(filtered_words) < len(words):
+    #             variations.append(' '.join(filtered_words))
         
-        return list(set(variations))  # Éliminer les doublons
+    #     return list(set(variations))  # Éliminer les doublons
     
     @property
     def cached_invoke(self):
         """Wrapper pour les appels LLM avec gestion de quota"""
         return self.key_manager.wrap_quota(self.model.invoke)
     
-    def _extract_from_csv_only(self, question: str) -> List[str]:
-        """
-        Extraction UNIQUEMENT depuis le fichier CSV (méthode 1)
-        CORRESPONDANCE EXACTE SEULEMENT (pas de correspondance partielle)
+    # def _extract_from_csv_only(self, question: str) -> List[str]:
+    #     """
+    #     Extraction UNIQUEMENT depuis le fichier CSV (méthode 1)
+    #     CORRESPONDANCE EXACTE SEULEMENT (pas de correspondance partielle)
         
-        Args:
-            question: Texte de la prescription
+    #     Args:
+    #         question: Texte de la prescription
             
-        Returns:
-            Liste des molécules trouvées dans le CSV avec correspondance exacte uniquement
-        """
-        import re
+    #     Returns:
+    #         Liste des molécules trouvées dans le CSV avec correspondance exacte uniquement
+    #     """
+    #     import re
         
-        found_molecules = set()
-        question_lower = question.lower()
+    #     found_molecules = set()
+    #     question_lower = question.lower()
         
-        logger.debug(f"CSV-ONLY extraction (EXACT match only) analyzing text: {question_lower[:200]}...")
+    #     logger.debug(f"CSV-ONLY extraction (EXACT match only) analyzing text: {question_lower[:200]}...")
         
-        # Recherche dans la liste CSV avec CORRESPONDANCE EXACTE SEULEMENT
-        for molecule in self.molecule_list:
-            molecule_clean = molecule.strip()
-            if not molecule_clean:
-                continue
+    #     # Recherche dans la liste CSV avec CORRESPONDANCE EXACTE SEULEMENT
+    #     for molecule in self.molecule_list:
+    #         molecule_clean = molecule.strip()
+    #         if not molecule_clean:
+    #             continue
                 
-            # SEULEMENT Pattern de correspondance exacte (mot entier)
-            pattern = r'\b' + re.escape(molecule_clean) + r'\b'
-            if re.search(pattern, question_lower):
-                original_form = self._get_original_form(molecule_clean)
-                found_molecules.add(original_form)
-                logger.debug(f"CSV-ONLY match (EXACT): '{molecule_clean}' -> '{original_form}'")
+    #         # SEULEMENT Pattern de correspondance exacte (mot entier)
+    #         pattern = r'\b' + re.escape(molecule_clean) + r'\b'
+    #         if re.search(pattern, question_lower):
+    #             original_form = self._get_original_form(molecule_clean)
+    #             found_molecules.add(original_form)
+    #             logger.debug(f"CSV-ONLY match (EXACT): '{molecule_clean}' -> '{original_form}'")
         
-        result = sorted(list(found_molecules))
-        logger.info(f"CSV-ONLY extraction (EXACT only) result: {len(result)} molecules found - {result}")
-        return result
+    #     result = sorted(list(found_molecules))
+    #     logger.info(f"CSV-ONLY extraction (EXACT only) result: {len(result)} molecules found - {result}")
+    #     return result
     
     def _extract_with_llm_only(self, question: str) -> List[str]:
         """
@@ -258,7 +258,7 @@ class DrugExtractor:
                 return cached_drugs
         
         try:
-            logger.info(f"Starting LLM-ONLY drug extraction for: {question[:100]}...")
+            logger.info(f"Starting LLM-ONLY drug extraction for: {question[:]}...")
             
             # Utiliser DIRECTEMENT le LLM comme dans RAG_up.py
             prompt = PROMPT_TEMPLATES['drug_extraction_simple'].format(question=question)
@@ -332,7 +332,7 @@ class DrugExtractor:
         Returns:
             Liste combinée des médicaments extraits par LLM avec prompt simple
         """
-        chunk_size = 2500  # Taille sécurisée pour le LLM
+        chunk_size = 1000  # Taille sécurisée pour le LLM
         chunks = []
         
         # Diviser le texte en chunks en essayant de respecter les lignes
@@ -641,9 +641,9 @@ class DetailedExplainer:
             explanation = response["output_text"]
             
             # Ajouter les notifications de sources (bulles cliquables)
-            explanation_with_sources = self._add_source_notifications(explanation, sources_info)
+            #explanation_with_sources = self._add_source_notifications(explanation, sources_info)
             
-            return explanation_with_sources
+            return explanation
             
         except Exception as e:
             error_msg = f"Failed to generate detailed explanation with sources: {e}"
@@ -683,33 +683,33 @@ class DetailedExplainer:
         
         return "\n".join(context_parts)
     
-    def _add_source_notifications(self, explanation: str, sources_info: List[Dict]) -> str:
-        """
-        Ajoute des notifications de sources (bulles cliquables) dans l'explication
+    # def _add_source_notifications(self, explanation: str, sources_info: List[Dict]) -> str:
+    #     """
+    #     Ajoute des notifications de sources (bulles cliquables) dans l'explication
         
-        Args:
-            explanation: Explication générée
-            sources_info: Informations sur les sources
+    #     Args:
+    #         explanation: Explication générée
+    #         sources_info: Informations sur les sources
             
-        Returns:
-            Explication avec notifications de sources
-        """
-        # Ajouter des références de sources dans le texte
-        enhanced_explanation = explanation
+    #     Returns:
+    #         Explication avec notifications de sources
+    #     """
+    #     # Ajouter des références de sources dans le texte
+    #     enhanced_explanation = explanation
         
-        # Ajouter une section avec les bulles de sources à la fin
-        if sources_info:
-            enhanced_explanation += "\n\n📝 **Sources consultées** (cliquez pour détails):\n"
+    #     # Ajouter une section avec les bulles de sources à la fin
+    #     if sources_info:
+    #         enhanced_explanation += "\n\n📝 **Sources consultées** (cliquez pour détails):\n"
             
-            for i, source in enumerate(sources_info[:3], 1):
-                citation = source.get('academic_citation', source.get('document', f'Source {i}'))
-                relevance = source.get('relevance_score', 0)
+    #         for i, source in enumerate(sources_info[:3], 1):
+    #             citation = source.get('academic_citation', source.get('document', f'Source {i}'))
+    #             relevance = source.get('relevance_score', 0)
                 
-                # Créer une "bulle" cliquable (pour Streamlit)
-                source_bubble = f"🟡 **Source {i}**: {citation} (Score: {relevance:.2f})"
-                enhanced_explanation += f"\n{source_bubble}"
+    #             # Créer une "bulle" cliquable (pour Streamlit)
+    #             source_bubble = f"🟡 **Source {i}**: {citation} (Score: {relevance:.2f})"
+    #             enhanced_explanation += f"\n{source_bubble}"
         
-        return enhanced_explanation
+    #     return enhanced_explanation
     
     def _create_sources_summary(self, sources_info: List[Dict]) -> str:
         """

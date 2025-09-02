@@ -88,10 +88,10 @@ class AnalysisPage:
         # Zone de texte pour la question
         user_question = st.text_area(
             "Prescription à analyser:",
-            placeholder="Copiez-collez votre prescription ici...",
+            placeholder="votre prescription ici...",
             height=300,
-            max_chars=20000,  # Limitation à 20 000 caractères
-            help="Copiez-collez votre prescription complète - L'IA extraira automatiquement les molécules actives et analysera les interactions (max 20 000 caractères)"
+            #max_chars=200,  # Limitation à 20 000 caractères
+            help="votre prescription complète - L'IA extraira automatiquement les molécules actives et analysera les interactions (max 20 000 caractères)"
         )
         # Options d'analyse
         col1, col2, col3 = st.columns([2, 1, 1])
@@ -144,7 +144,7 @@ class AnalysisPage:
                 return
             
             # Afficher les médicaments trouvés
-            st.success(f"Molécules identifiés: {', '.join(drugs)}")
+            st.success(f"Noms identifiés: {', '.join(drugs)}")
             
             # Étape 2: Recherche de contexte documentaire si demandé
             context_docs = []

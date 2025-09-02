@@ -23,7 +23,7 @@ class Settings:
     
     # PDF processing limits
     MAX_PDF_SIZE_MB: int = int(os.getenv("MAX_PDF_SIZE_MB", "50"))
-    MIN_PAGE_CONTENT_LENGTH: int = int(os.getenv("MIN_PAGE_CONTENT_LENGTH", "20"))
+    MIN_PAGE_CONTENT_LENGTH: int = int(os.getenv("MIN_PAGE_CONTENT_LENGTH", "1"))
     
     # Text chunking parameters
     CHUNK_SIZE: int = int(os.getenv("CHUNK_SIZE", "800"))
@@ -31,12 +31,12 @@ class Settings:
     
     # Model configuration
     EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "models/embedding-001")
-    LLM_MODEL: str = os.getenv("LLM_MODEL", "gemini-1.5-flash")
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "gemini-2.0-flash")
     LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0.0"))
     
     # Search parameters
-    DEFAULT_SEARCH_RESULTS: int = int(os.getenv("DEFAULT_SEARCH_RESULTS", "5"))
-    MAX_SEARCH_RESULTS: int = int(os.getenv("MAX_SEARCH_RESULTS", "10"))
+    DEFAULT_SEARCH_RESULTS: int = int(os.getenv("DEFAULT_SEARCH_RESULTS", "50"))
+    MAX_SEARCH_RESULTS: int = int(os.getenv("MAX_SEARCH_RESULTS", "50"))
     
     # Paths
     DATA_DIR: str = "Data"
