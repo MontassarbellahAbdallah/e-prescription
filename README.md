@@ -1,4 +1,6 @@
 # Medical Prescription Analyzer
+## the App 
+👉 https://e-prescription.streamlit.app/
 
 ## Overview
 This application is an AI-powered medical prescription analyzer that uses Google Gemini and RAG (Retrieval-Augmented Generation) technology to provide comprehensive analysis of medication prescriptions. The system evaluates multiple risk factors to help healthcare professionals make informed decisions about patient safety.
